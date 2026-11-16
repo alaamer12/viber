@@ -45,7 +45,7 @@ Promotion checklist:
 3. Update `skills/<name>/SKILL.md` dispatcher if the load-table or mode changed.
 4. Update `skills/<name>/assets/` if templates or diagrams changed.
 5. Add a back-link in the docs file: "Shipped as `skills/<name>/references/<file>.md`."
-6. If the change adds/removes a skill or alters its phase, use `python viber.py add-skill` / `remove-skill` / `set`.
+6. If the change adds/removes a skill or alters its phase, use `viber add-skill` / `remove-skill` / `set`.
 
 ### 4. Verify
 
@@ -53,8 +53,8 @@ Before shipping:
 
 - Every relative link in the changed skill files resolves.
 - Frontmatter: `name` matches folder, `description` is single-line ≤ 1024 chars.
-- `python viber.py refresh <skill>` succeeds (re-reads frontmatter + content tree).
-- `python viber.py status` shows expected phase and blocker count.
+- `viber refresh <skill>` succeeds (re-reads frontmatter + content tree).
+- `viber status` shows expected phase and blocker count.
 - No design rationale leaked into skill references (skills tell the agent what to do, not why the design exists).
 - No settled decision contradicted by the skill's instructions.
 
@@ -78,26 +78,28 @@ After install: verify a symlink resolves (`test -f ~/.qoder/skills/viber/SKILL.m
 | Doc changes materially (new decision, altered flow) | Re-promote the affected skill reference. |
 | Skill changes (bug fix, wording, new mode) | Add a note in the corresponding doc section. Full doc rewrite only if the design itself changed. |
 | Doc and skill contradict | The skill wins for agent behavior (it's what executes). The doc wins for design intent. Reconcile by re-promoting or by updating the doc to reflect the shipped reality. |
-| New skill added | `python viber.py add-skill <name> --deck <d> --path <p>`, add doc coverage, run installer. |
-| Skill removed | `python viber.py remove-skill <name>`, mark doc section superseded, run installer. |
+| New skill added | `viber add-skill <name> --deck <d> --path <p>`, add doc coverage, run installer. |
+| Skill removed | `viber remove-skill <name>`, mark doc section superseded, run installer. |
 
 ## What this pipeline is not
 
-- Not a CI/CD system. The agent walks these stages conversationally, using `viber.py` for census writes.
+- Not a CI/CD system. The agent walks these stages conversationally, using the `viber` CLI for census writes.
 - Not a release calendar. Promotion happens when a topic settles, not on a schedule.
 - Not a gate against iteration. Drafts can be re-opened (thaw). A shipped skill can be revised. The pipeline describes the flow, not a one-way ratchet.
 
 ## The census and telemetry
 
-The agent never hand-edits `viber.json`. All reads and writes go through `viber.py`:
+The agent never hand-edits `viber.json`. All reads and writes go through the `viber` CLI
+(the `viber` package; `viber.py` is only the launcher shim). Setup once: `uv sync` in this
+project creates the isolated `.venv` with typer, pydantic and the `viber` console script.
 
 ```bash
-python viber.py skill idea-md --content   # what files to read
-python viber.py next                      # what to do next, and why
-python viber.py lint                      # audit census; deck conflicts surface as ASK USER
-python viber.py use idea-md               # record invocation (AGENTS.md instruction)
-python viber.py set idea-md blockers '["awaiting user concept"]'
-python viber.py refresh idea-md           # re-read frontmatter from disk
+viber skill idea-md --content   # what files to read
+viber next                      # what to do next, and why
+viber lint                      # audit census; deck conflicts surface as ASK USER
+viber use idea-md               # record invocation (AGENTS.md instruction)
+viber set idea-md blockers '["awaiting user concept"]'
+viber refresh idea-md           # re-read frontmatter from disk
 ```
 
 Per-project data lives at `.viber/.data/`:
@@ -111,7 +113,7 @@ Each skill's `fit` carries its position in the web of work: `after`, `before` an
 relation objects — `{"skill": "<name>", "hint": "<why this edge exists, one line>",
 "long_hint": "<the use-case it covers>"}`. `after` names what should run first, `before` what this
 feeds, `with` what pairs naturally. The same text describes the edge from both ends, so a relation is
-authored once. `python viber.py next` answers not only *which skill* but *why* — it reads the chosen
+authored once. `viber next` answers not only *which skill* but *why* — it reads the chosen
 skill's `after` edges and states each predecessor's hint; `skill <name>` lists the full relation web,
 and `--long` adds the use-case detail.
 
@@ -124,7 +126,7 @@ project as it studies what the user actually has. A possible candidate not insta
 to surface, never a blocker. `step` shows goal + needs, the resolved roster, and remaining candidates;
 `next` walks the roster ordered topologically along within-step `after` edges.
 
-`python viber.py lint` audits the census read-only: schema keys, type/phase enums, dangling
+`viber lint` audits the census read-only: schema keys, type/phase enums, dangling
 relations and serves, broken skill paths, census-vs-disk version drift, deck-membership mismatches,
 candidates missing from the census, unclassified overlaps. It exits 1 on errors or open decisions.
 When one skill name is claimed by **two decks** (conflicting versions or sources), lint does NOT pick
@@ -152,8 +154,11 @@ The source project's `viber.json` (at project root) is the master seed. `vinit` 
 projects/viber/
 ├── README.md          project identity and map
 ├── PIPELINE.md        this file
-├── viber.py           census CLI (read/write/telemetry)
+├── pyproject.toml     uv/hatchling package definition (console script: viber)
+├── viber.py           launcher shim (keeps `python viber.py <cmd>` working anywhere)
 ├── viber.json         master seed census (42 skills, decks, lifecycle)
+├── src/viber/     the CLI: cli (parsing) · core (rules) · data (IO) · output (shaping)
+├── tests/             pytest suites incl. legacy-parity against the seed
 ├── docs/              design drafts [DR]
 │   ├── index.md       global index
 │   ├── regime/        how Viber governs a project

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "viber"
+version = "1.0.0"
+description = "Viber census CLI — the agent's read/write interface to .viber/.data/viber.json + telemetry.db"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "alaamer12" }]
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.7",
+]
+
+[project.scripts]
+viber = "viber.app:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "mypy>=1.11",
+    "ruff>=0.6",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/viber"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+packages = ["viber"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+# typer's idiomatic style passes Option()/Argument() in defaults
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

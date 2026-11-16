@@ -2,3 +2,7 @@ __pycache__/
 *.tmp
 telemetry.db
 .venv/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
