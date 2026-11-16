@@ -7,6 +7,7 @@ Exit codes: 0 ok, 1 not found/invalid, 2 usage.
 Display: rich when installed, plain fallback otherwise. --no-rich forces plain.
 """
 import argparse
+import heapq
 import json
 import os
 import re
@@ -19,9 +20,12 @@ from pathlib import Path
 DEFAULT_DATA_DIR = Path(".viber/.data")
 CENSUS_NAME = "viber.json"
 DB_NAME = "telemetry.db"
-ALLOWED_SET_FIELDS = {"blockers", "phase"}
+ALLOWED_SET_FIELDS = {"blockers", "phase", "type", "use_cases", "deck"}
 VALID_PHASES = {"DR", "IP", "PP"}
+VALID_TYPES = {"battery", "meta", "normal", "hybrid", "otherwise"}
 REQUIRED_KEYS = {"skills", "lifecycle", "decks"}
+REQUIRED_SKILL_KEYS = ("version", "type", "description", "use_cases", "deck",
+                       "path", "owned", "content", "fit", "history")
 
 # --- Display layer ---
 
@@ -133,10 +137,9 @@ def display_kv(title, pairs):
 
 
 def display_json(data):
-    if _use_rich:
-        _console.print_json(json.dumps(data, ensure_ascii=False))
-    else:
-        print(json.dumps(data, indent=2, ensure_ascii=False))
+    # --json is the machine contract: raw, always plain — never styled, never rich.
+    # ensure_ascii keeps pipes safe on legacy Windows codepages (valid JSON either way).
+    print(json.dumps(data, indent=2))
 
 
 # --- Context ---
@@ -199,10 +202,42 @@ def rel_of(census, name, kind):
 
 
 def step_of(census, name):
+    serves = fit_of(census, name).get("serves", [])
+    if serves:
+        return ", ".join(serves)
     for step in census.get("lifecycle", []):
-        if name in step.get("skills", []) or name in step.get("commands", []):
+        if name in step.get("commands", []):
             return step["step"]
     return "-"
+
+
+def step_roster(census, step_name):
+    """Skills serving this step (from any deck), ordered by their within-step
+    after-edges; ties and cycles fall back to census insertion order."""
+    members = [n for n, e in census["skills"].items()
+               if step_name in e.get("fit", {}).get("serves", [])]
+    index = {n: i for i, n in enumerate(members)}
+    indeg = {n: 0 for n in members}
+    dependents = {n: [] for n in members}
+    for m in members:
+        for rel in rel_of(census, m, "after"):
+            p = rel["skill"]
+            if p in index and p != m:
+                indeg[m] += 1
+                dependents[p].append(m)
+    ready = [index[n] for n in members if indeg[n] == 0]
+    heapq.heapify(ready)
+    out = []
+    while ready:
+        n = members[heapq.heappop(ready)]
+        out.append(n)
+        for nxt in dependents[n]:
+            indeg[nxt] -= 1
+            if indeg[nxt] == 0:
+                heapq.heappush(ready, index[nxt])
+    if len(out) != len(members):
+        out += [n for n in members if n not in out]
+    return out
 
 
 def current_step(census):
@@ -326,6 +361,7 @@ def cmd_skill(census, args, ctx):
     fit = entry.get("fit", {})
     pairs = [
         ("version", entry.get("version") or "?"),
+        ("type", entry.get("type", "?")),
         ("deck", entry.get("deck", "?")),
         ("owned", "yes" if entry.get("owned") else "no"),
         ("path", entry.get("path") or "null"),
@@ -346,6 +382,9 @@ def cmd_skill(census, args, ctx):
                 line += f"\n    {r['long_hint']}"
             rel_lines.append(line)
     display_kv(name, pairs)
+    uc = entry.get("use_cases", [])
+    if uc:
+        display_tree("use-cases", uc)
     if rel_lines:
         display_tree("relations", rel_lines)
     desc = entry.get("description") or ""
@@ -373,9 +412,9 @@ def cmd_step(census, args, ctx):
             display_error("no current step determinable")
             return 1
     if args.json:
-        display_json(target)
+        display_json({**target, "roster": step_roster(census, target["step"])})
         return 0
-    skills = target.get("skills", [])
+    skills = step_roster(census, target["step"])
     commands = target.get("commands", [])
     rows = []
     for s in skills:
@@ -385,8 +424,12 @@ def cmd_step(census, args, ctx):
         rows.append((s, entry.get("version") or "?", status))
     for c in commands:
         rows.append((c, "-", "command"))
+    possible = [p for p in target.get("possible_skills", []) if p not in skills]
+    for p in possible:
+        rows.append((p, "-", "[dim]candidate (not installed)[/dim]" if _use_rich else "candidate"))
     display_table(f"{target['step']} [{target.get('phase') or 'any'}]", ["Skill", "Version", "Status"], rows)
     display_info(f"goal: {target.get('goal', '')}")
+    display_tree("needs", target.get("needs", []))
     return 0
 
 
@@ -396,7 +439,7 @@ def cmd_next(census, args, ctx):
         display_error("no current step")
         return 1
     blocked = []
-    for name in step.get("skills", []):
+    for name in step_roster(census, step["step"]):
         entry = entry_of(census, name)
         if not entry:
             continue
@@ -522,7 +565,10 @@ def cmd_list(census, args, ctx):
 
 def cmd_stats(census, args, ctx):
     if not ctx.db_path.is_file():
-        display_info("no telemetry data yet")
+        if args.json:
+            display_json({} if args.name else [])
+        else:
+            display_info("no telemetry data yet")
         return 0
     with ctx.db() as conn:
         if args.name:
@@ -544,7 +590,10 @@ def cmd_stats(census, args, ctx):
 
 def cmd_patterns(census, args, ctx):
     if not ctx.db_path.is_file():
-        display_info("no telemetry data yet")
+        if args.json:
+            display_json([])
+        else:
+            display_info("no telemetry data yet")
         return 0
     with ctx.db() as conn:
         rows = conn.execute("SELECT skill FROM invocations ORDER BY id").fetchall()
@@ -559,6 +608,106 @@ def cmd_patterns(census, args, ctx):
         return 0
     display_table("patterns", ["Sequence", "Count"], [(k, v) for k, v in top])
     return 0
+
+
+def resolve_skill_dir(census, ctx, entry):
+    path_str = entry.get("path")
+    if not path_str:
+        return None
+    skill_dir = Path(path_str)
+    if not skill_dir.is_absolute():
+        if entry.get("owned"):
+            skill_dir = ctx.census_path.parent / path_str
+        else:
+            registry = census.get("decks", {}).get(entry.get("deck", "author"), {}).get("registry", "")
+            skill_dir = Path(registry) / path_str if registry else ctx.census_path.parent / path_str
+    return skill_dir
+
+
+def cmd_lint(census, args, ctx):
+    findings = []
+
+    def add(severity, check, subject, detail, question=None):
+        findings.append({"severity": severity, "check": check, "subject": subject,
+                         "detail": detail, "ask_user": question is not None, "question": question})
+
+    decks = census.get("decks", {})
+    skills = census["skills"]
+    step_names = {s["step"] for s in census.get("lifecycle", [])}
+    phase = census.get("projectPhase")
+    if phase not in VALID_PHASES:
+        add("error", "phase", ".", f"projectPhase '{phase}' not in {sorted(VALID_PHASES)}")
+
+    for name, entry in skills.items():
+        missing = [k for k in REQUIRED_SKILL_KEYS if k not in entry]
+        if missing:
+            add("error", "keys", name, f"missing keys: {', '.join(missing)}")
+        t = entry.get("type")
+        if t not in VALID_TYPES:
+            add("error", "type", name, f"type '{t}' not in {sorted(VALID_TYPES)}")
+        deck = entry.get("deck")
+        if deck not in decks:
+            add("error", "deck", name, f"deck '{deck}' not defined")
+        elif name not in decks[deck].get("skills", []):
+            add("warning", "membership", name, f"claims deck '{deck}' but not in its skills list")
+        in_decks = [d for d, dv in decks.items() if name in dv.get("skills", [])]
+        if len(in_decks) > 1:
+            add("question", "deck-conflict", name,
+                f"present in multiple decks: {', '.join(in_decks)}",
+                question=f"'{name}' is claimed by decks {in_decks} — versions or sources may differ. "
+                         f"Ask the user which deck wins, then record it: set {name} deck <chosen>")
+        for kind in ("after", "before", "with"):
+            for rel in rel_of(census, name, kind):
+                if rel["skill"] not in skills:
+                    add("error", "dangling-relation", name, f"{kind} -> '{rel['skill']}' not in census")
+        for s in entry.get("fit", {}).get("serves", []):
+            if s not in step_names:
+                add("error", "dangling-serves", name, f"serves unknown step '{s}'")
+        path_str = entry.get("path")
+        if not path_str:
+            if not entry.get("fit", {}).get("blockers"):
+                add("warning", "null-path", name, "no path and no blockers recorded")
+        else:
+            skill_dir = resolve_skill_dir(census, ctx, entry)
+            if skill_dir is None or not (skill_dir / "SKILL.md").is_file():
+                add("error", "broken-path", name, f"SKILL.md not found at {skill_dir}")
+            else:
+                disk = parse_frontmatter(skill_dir / "SKILL.md").get("version")
+                if disk and entry.get("version") and disk != entry["version"]:
+                    add("warning", "version-drift", name,
+                        f"census says v{entry['version']}, disk says v{disk} — run: refresh {name}")
+
+    for step in census.get("lifecycle", []):
+        for c in step.get("commands", []):
+            if c not in skills:
+                add("warning", "command-missing", step["step"], f"command '{c}' not registered as skill")
+        for cand in step.get("possible_skills", []):
+            if cand not in skills:
+                add("warning", "candidate-not-installed", step["step"],
+                    f"'{cand}' declared possible but absent from census — agent should suggest installing it")
+
+    for u in census.get("unclassified", []):
+        uname = u.get("name") if isinstance(u, dict) else u
+        if uname in skills or any(uname in dv.get("skills", []) for dv in decks.values()):
+            add("warning", "unclassified-overlap", str(uname), "listed unclassified but also classified")
+
+    if args.json:
+        display_json(findings)
+        return 1 if findings else 0
+    errors = [f for f in findings if f["severity"] == "error"]
+    warns = [f for f in findings if f["severity"] == "warning"]
+    asks = [f for f in findings if f["severity"] == "question"]
+    if not findings:
+        display_success("census consistent — no findings")
+        return 0
+    if errors:
+        display_table("errors", ["Check", "Subject", "Detail"], [(e["check"], e["subject"], e["detail"]) for e in errors])
+    if warns:
+        display_table("warnings", ["Check", "Subject", "Detail"], [(w["check"], w["subject"], w["detail"]) for w in warns])
+    for a in asks:
+        display_error(f"ASK USER — {a['question']}")
+    display_info(f"lint: {len(errors)} errors, {len(warns)} warnings, {len(asks)} decisions for the user")
+    return 1 if (errors or asks) else 0
 
 
 def cmd_set(census, args, ctx):
@@ -599,6 +748,34 @@ def cmd_set(census, args, ctx):
             display_error(f"phase must be one of {sorted(VALID_PHASES)} or null")
             return 1
         entry["fit"]["phase"] = None if value == "null" else value
+    elif field == "type":
+        valid_types = {"battery", "meta", "normal", "hybrid", "otherwise"}
+        if value not in valid_types:
+            display_error(f"type must be one of {sorted(valid_types)}")
+            return 1
+        entry["type"] = value
+    elif field == "use_cases":
+        try:
+            parsed = json.loads(value)
+            if not isinstance(parsed, list) or not all(isinstance(x, str) for x in parsed):
+                raise ValueError
+        except (json.JSONDecodeError, ValueError):
+            display_error("use_cases must be a JSON array of strings")
+            return 1
+        entry["use_cases"] = parsed
+    elif field == "deck":
+        if value not in census.get("decks", {}):
+            display_error(f"deck '{value}' not defined")
+            return 1
+        old = entry.get("deck")
+        for dv in census["decks"].values():
+            if target in dv.get("skills", []):
+                dv["skills"].remove(target)
+        census["decks"][value].setdefault("skills", []).append(target)
+        census["decks"][value]["skills"].sort()
+        entry["deck"] = value
+        entry.setdefault("history", []).append(
+            {"date": today(), "event": f"deck resolved by user: {old} -> {value}"})
     save_census(ctx.census_path, census)
     display_success(f"{target}.{field} updated")
     return 0
@@ -636,12 +813,14 @@ def cmd_add_skill(census, args, ctx):
     content = list_content(skill_dir)
     census["skills"][name] = {
         "version": fm.get("version"),
+        "type": "normal",
         "description": fm.get("description", ""),
+        "use_cases": [],
         "deck": args.deck,
         "path": args.path,
         "owned": False,
         "content": content,
-        "fit": {"role": "", "when": "", "after": [], "before": [], "with": [], "produces": [], "consumes": [], "blockers": []},
+        "fit": {"role": "", "when": "", "serves": [], "after": [], "before": [], "with": [], "produces": [], "consumes": [], "blockers": []},
         "history": [{"date": today(), "event": "registered via add-skill"}]
     }
     deck = census.get("decks", {}).get(args.deck)
@@ -663,10 +842,14 @@ def cmd_remove_skill(census, args, ctx):
         if name in deck.get("skills", []):
             deck["skills"].remove(name)
     for step in census.get("lifecycle", []):
-        if name in step.get("skills", []):
-            step["skills"].remove(name)
         if name in step.get("commands", []):
             step["commands"].remove(name)
+    for e in census["skills"].values():
+        fit = e.get("fit", {})
+        for kind in ("after", "before", "with"):
+            if kind in fit:
+                fit[kind] = [r for r in fit[kind]
+                             if (r.get("skill") if isinstance(r, dict) else r) != name]
     save_census(ctx.census_path, census)
     display_success(f"removed: {name}")
     return 0
@@ -678,17 +861,10 @@ def cmd_refresh(census, args, ctx):
     if not entry:
         display_error(f"skill '{name}' not in census")
         return 1
-    path_str = entry.get("path")
-    if not path_str:
+    skill_dir = resolve_skill_dir(census, ctx, entry)
+    if skill_dir is None:
         display_error(f"skill '{name}' has no path")
         return 1
-    skill_dir = Path(path_str)
-    if not skill_dir.is_absolute():
-        if entry.get("owned"):
-            skill_dir = ctx.census_path.parent / path_str
-        else:
-            registry = census.get("decks", {}).get(entry.get("deck", "author"), {}).get("registry", "")
-            skill_dir = Path(registry) / path_str if registry else ctx.census_path.parent / path_str
     skill_md = skill_dir / "SKILL.md"
     if not skill_md.is_file():
         display_error(f"SKILL.md not found at {skill_dir}")
@@ -748,6 +924,7 @@ COMMANDS = {
     "list": cmd_list,
     "stats": cmd_stats,
     "patterns": cmd_patterns,
+    "lint": cmd_lint,
     "set": cmd_set,
     "log": cmd_log,
     "add-skill": cmd_add_skill,
@@ -777,6 +954,7 @@ def main():
     sub.add_parser("list", parents=[common])
     p = sub.add_parser("stats", parents=[common]); p.add_argument("name", nargs="?")
     sub.add_parser("patterns", parents=[common])
+    sub.add_parser("lint", parents=[common])
     p = sub.add_parser("set", parents=[common]); p.add_argument("skill"); p.add_argument("field"); p.add_argument("value")
     p = sub.add_parser("log", parents=[common]); p.add_argument("skill"); p.add_argument("event")
     p = sub.add_parser("add-skill", parents=[common]); p.add_argument("name"); p.add_argument("--deck"); p.add_argument("--path")
@@ -789,6 +967,10 @@ def main():
     if not args.command:
         parser.print_help()
         sys.exit(2)
+
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
 
     init_display(no_rich=args.no_rich)
     census_path = resolve_census(args)

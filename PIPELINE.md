@@ -93,7 +93,8 @@ The agent never hand-edits `viber.json`. All reads and writes go through `viber.
 
 ```bash
 python viber.py skill idea-md --content   # what files to read
-python viber.py next                      # what to do next
+python viber.py next                      # what to do next, and why
+python viber.py lint                      # audit census; deck conflicts surface as ASK USER
 python viber.py use idea-md               # record invocation (AGENTS.md instruction)
 python viber.py set idea-md blockers '["awaiting user concept"]'
 python viber.py refresh idea-md           # re-read frontmatter from disk
@@ -113,6 +114,35 @@ feeds, `with` what pairs naturally. The same text describes the edge from both e
 authored once. `python viber.py next` answers not only *which skill* but *why* — it reads the chosen
 skill's `after` edges and states each predecessor's hint; `skill <name>` lists the full relation web,
 and `--long` adds the use-case detail.
+
+Lifecycle steps own no skills: each step declares `{step, phase, goal, needs, possible_skills, commands}`
+— `needs` states the capabilities the step must accomplish, `possible_skills` is the favorite-deck
+pool: deck skills declared as useful candidates for that step, from any deck, and `commands` lists
+Viber's own v-commands declared at that step. The installed binding lives skill-side in
+`fit.serves: [step names]`: any Skill from any deck can serve any step; vinit fills `serves` per
+project as it studies what the user actually has. A possible candidate not installed is a suggestion
+to surface, never a blocker. `step` shows goal + needs, the resolved roster, and remaining candidates;
+`next` walks the roster ordered topologically along within-step `after` edges.
+
+`python viber.py lint` audits the census read-only: schema keys, type/phase enums, dangling
+relations and serves, broken skill paths, census-vs-disk version drift, deck-membership mismatches,
+candidates missing from the census, unclassified overlaps. It exits 1 on errors or open decisions.
+When one skill name is claimed by **two decks** (conflicting versions or sources), lint does NOT pick
+a winner — it emits an `ASK USER` finding: the agent must put the choice to the user, then record it
+with `set <skill> deck <chosen>`, which rewrites all deck membership lists and logs the decision to
+the skill's history. Conflicts are user decisions; the census only surfaces them.
+
+Every skill entry also carries what it *is* and what it's *for*:
+- `type` — one of exactly five: `battery` (one skill, several levels/modes over one domain),
+  `meta` (its subject is the agent/skill system itself — Viber's own command skills live here),
+  `normal` (single-purpose workflow), `hybrid` (a method that also ships execution machinery),
+  `otherwise` (cannot be classified — e.g., a skill whose schema is broken or foreign that `vinit`
+  met on the web; honest "unknown", never a guessed bucket).
+- `use_cases` — concrete situations the skill applies to, across every domain it touches (a skill
+  like `mistakes` lists both documentation errors and source-code bug classes). `next` recommendations,
+  router guidance and vinit's per-project study read these to judge fit by evidence, not by name.
+`set <skill> type <battery|meta|normal|hybrid|otherwise>` and `set <skill> use_cases '["..."]'`
+keep both writable through the CLI.
 
 The source project's `viber.json` (at project root) is the master seed. `vinit` reads it, studies the user's actual deck, and writes the per-project census into `.viber/.data/`. The `--census <path>` flag overrides resolution for development against the seed.
 

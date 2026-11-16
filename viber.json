@@ -79,7 +79,13 @@
       "step": "Idea & Understanding",
       "phase": "DR",
       "goal": "Turn a raw concept into a written, grilled idea document with competitive awareness",
-      "skills": [
+      "needs": [
+        "write the concept down as a durable idea document",
+        "know what already exists and what genuinely differentiates",
+        "structure the product knowledge into a documentation taxonomy",
+        "declare the agent rulebook over the settled docs"
+      ],
+      "possible_skills": [
         "idea-md",
         "reveal",
         "steering",
@@ -93,7 +99,13 @@
       "step": "Vision",
       "phase": "DR",
       "goal": "Define the page universe, prototype the experience, set the visual bar",
-      "skills": [
+      "needs": [
+        "inventory the product's full page and screen universe",
+        "make the vision tangible as interactive mockups",
+        "reduce clutter and visual noise in drafted screens",
+        "review visual quality against design anti-patterns"
+      ],
+      "possible_skills": [
         "pages",
         "prototype",
         "denoise",
@@ -105,7 +117,16 @@
       "step": "Project Foundation",
       "phase": "DR",
       "goal": "Settle architecture, contracts, conventions, and the full steering tech tier before code",
-      "skills": [
+      "needs": [
+        "design the technical architecture and subsystem boundaries",
+        "fix ownership contracts across architectural layers",
+        "decide UI role structure and state-vs-condition semantics",
+        "settle styling and typing systems before code accumulates",
+        "record canonical project docs: readme, commitments, glossary, components, units",
+        "name the engineering anti-patterns this stack must avoid",
+        "audit dependencies and capture user-level preferences"
+      ],
+      "possible_skills": [
         "steering",
         "architecture",
         "contract",
@@ -128,14 +149,23 @@
       "step": "Implementation",
       "phase": "IP",
       "goal": "Build, test, review, and ship working code against the settled specs",
-      "skills": [
+      "needs": [
+        "plan and decompose large work before touching it",
+        "write code under gates, grounded in the settled specs",
+        "diagnose root causes, fix them, and pin the regression",
+        "review diffs on standards and spec axes",
+        "refactor under tests without changing behavior",
+        "keep sweeps complete everywhere the change lives",
+        "land verified work in history and drive GitHub from it"
+      ],
+      "possible_skills": [
+        "typing",
         "implement",
         "dbug",
         "fix",
         "test",
         "code-review",
         "refactor",
-        "typing",
         "update",
         "commit",
         "gh",
@@ -150,7 +180,14 @@
       "step": "Shared",
       "phase": null,
       "goal": "Phase-blind capabilities reachable from any step",
-      "skills": [
+      "needs": [
+        "pressure-test plans, decisions and ideas relentlessly",
+        "close design topics one at a time into specs",
+        "grow the project's own Viber variant when a capability is missing",
+        "keep drafts and answered decisions from hardening into law",
+        "log and reuse the project's mistake lessons"
+      ],
+      "possible_skills": [
         "viber",
         "grill-me",
         "close-topics",
@@ -166,7 +203,13 @@
   "skills": {
     "idea-md": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Turns a raw project prompt - any language, any mess - into IDEA.md: the project''s complete idea document, readable by anyone, technical or not. First the idea''s inspiration - a SET of sources: name every product it draws from (Medium, Dev.to…), what each contributes, its relationship (instance of / similar to / a slice of - mixed is normal), what is its own invention, and what it refuses per source. If the prompt never names one, the agent ASKS (''Is this project similar to X?'') instead of guessing. Then plain prose: what it is, its audience and audience types, everything it includes and explicitly does not - written as free-form paragraphs, not fixed bullet sections. Unclear points become idea-level questions only (name, scope boundaries, access rules, editorial stance) - never platform, stack or hosting, which belong to later stages. No system analysis. Triggers: ''write the idea file'', ''turn this into IDEA.md'', a spoken project vision. Feeds the lifecycle''s first phase.",
+      "use_cases": [
+        "a raw spoken project concept",
+        "a messy multilingual prompt needing a first document",
+        "a pitch review with non-technical readers"
+      ],
       "deck": "author",
       "path": "Groups/Viber/idea-md",
       "owned": false,
@@ -183,6 +226,9 @@
       "fit": {
         "role": "Produces the idea document every later step references",
         "when": "Project has a raw concept but no written IDEA.md",
+        "serves": [
+          "Idea & Understanding"
+        ],
         "after": [],
         "before": [
           {
@@ -221,18 +267,18 @@
             "long_hint": "perception-tier docs (product, domain, capabilities, policy) derive from the written idea; starting them before IDEA.md risks capturing a product the user never described."
           }
         ],
-        "produces": [
-          "IDEA.md"
-        ],
-        "consumes": [],
-        "blockers": [],
         "with": [
           {
             "skill": "grill-me",
             "hint": "Pressure-test the idea while it is still words",
             "long_hint": "grill-me attacks the assumptions IDEA.md just wrote down; catching them before the foundation docs saves rewriting the docs downstream."
           }
-        ]
+        ],
+        "produces": [
+          "IDEA.md"
+        ],
+        "consumes": [],
+        "blockers": []
       },
       "history": [
         {
@@ -243,7 +289,13 @@
     },
     "reveal": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Competitive-intelligence investigation into how unique a project idea actually is: how much already exists, who built it, how well it works, and what genuinely differentiates the proposal. Splits the idea into search axes (never one query), discovers implementations across engines, code hosts, app stores, startup directories, communities, archives and native-language sources - obscure and defunct included - then investigates each competitor on ten dimensions, scores similarity 0-100 with reasons, assesses uniqueness from eight lenses, and ends in an evidence-backed landscape report with a direct verdict. Reports reality even when disappointing; never claims uniqueness from failing to find a competitor. Triggers: \"/reveal\", \"is this idea taken/already built\", \"how unique is my project\", \"find competitors for X\", \"competitive landscape for X\", \"has anyone built this\". Not a general research dig (mine), choosing between known options (thebest), a stack pick (techstack), or a codebase audit (exmaine).",
+      "use_cases": [
+        "'has this been built before?'",
+        "the differentiation section of a pitch",
+        "competitor feature evidence for a roadmap"
+      ],
       "deck": "author",
       "path": "reveal",
       "owned": false,
@@ -272,6 +324,9 @@
       "fit": {
         "role": "Competitive landscape and uniqueness verdict",
         "when": "Idea exists; need to know what already exists and what differentiates",
+        "serves": [
+          "Idea & Understanding"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -286,20 +341,20 @@
             "long_hint": "after reveal shows what already exists, steering can capture what this product claims as its own instead of restating an incumbent's domain."
           }
         ],
-        "produces": [
-          "competitive landscape report"
-        ],
-        "consumes": [
-          "IDEA.md"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "pages",
             "hint": "Landscape feeds the screen plan",
             "long_hint": "reveal shows what already exists out there; pages uses that to decide which screens differentiate and which are copies of competitors."
           }
-        ]
+        ],
+        "produces": [
+          "competitive landscape report"
+        ],
+        "consumes": [
+          "IDEA.md"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -310,7 +365,13 @@
     },
     "steering": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "Interactive documentation architecture and steering taxonomy skill. Transforms project requirements or legacy documentation into the Two-Tier Steering Taxonomy (.steering/ with perception/ [product, domain, capabilities, policy] and tech/ [stack, structure, function, doctrine, playbook], plus shared-plus-area splitting) and outside-taxonomy folders (features, reference). Operates in four gated phases with deep grill-me interviewing: (1) Contextual Discovery & Architectural Grill-Me Interview, (2) Ordered Placement & Passage-Level Role Analysis, (3) Distribution Plan Proposal & Approval Gate, and (4) Materialization & Index Synchronization. Use when asked to create or organize project documentation, apply the steering taxonomy, distribute requirements into .steering/, or migrate legacy docs.",
+      "use_cases": [
+        "turning a requirements dump into the two-tier taxonomy",
+        "migrating legacy docs into perception/ and tech/",
+        "placement fights between product and tech documents"
+      ],
       "deck": "author",
       "path": "Groups/Viber/steering",
       "owned": false,
@@ -339,6 +400,10 @@
       "fit": {
         "role": "Two-tier documentation taxonomy (perception + tech); appears in Idea and Foundation steps",
         "when": "Requirements exist but no structured documentation architecture",
+        "serves": [
+          "Idea & Understanding",
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -363,6 +428,13 @@
             "long_hint": "steering fixed what the product is and does; architecture designs how the system serves that - reversed, the tech docs answer business questions still open."
           }
         ],
+        "with": [
+          {
+            "skill": "close-topics",
+            "hint": "One architecture topic closed at a time",
+            "long_hint": "steering opens many undecided areas; close-topics walks each to a settled document instead of mixing answers across caching, data model and queues."
+          }
+        ],
         "produces": [
           ".steering/ taxonomy"
         ],
@@ -370,14 +442,7 @@
           "IDEA.md",
           "requirements"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "close-topics",
-            "hint": "One architecture topic closed at a time",
-            "long_hint": "steering opens many undecided areas; close-topics walks each to a settled document instead of mixing answers across caching, data model and queues."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -387,8 +452,14 @@
       ]
     },
     "agents-md": {
-      "version": "1.0.2",
+      "version": "1.1.1",
+      "type": "meta",
       "description": "Creates/audits AGENTS.md - agent rulebook: obligations+references not docs, rules/ per-topic referenced is the recommendation, inline stays valid; one owner per fact (brief+pointer). 19 sections: instructions; context fence value+REACH+docs-root MUST-ASK; how-to router (also owns exec/env/version policy); startup; delegation; privacy - cascade/gitignore; resourceful - local-first; authority - ask-per-session; version control - VCS tiers, parked-work, identity; ambiguity - Exact/Broad, weighty MANDATORY, 1-file records; golden rules - never-bend, violation-shaped; review - rulebook-violations lead, then named tasks; skills - per-skill rows; facts - corrections beat memory; before-between-after - per-phase rituals (read/dedup/type-check), current prompt overrides; voice - a register per surface user''s own; sync blocks - multi-home meanings, a per-block table (site+line), meaning not letters, same-change duty; sections never deleted; maintenance - same-change+date. Writes ONLY AGENTS.md.",
+      "use_cases": [
+        "bootstrapping a project's AGENTS.md",
+        "auditing rulebook drift after doc moves",
+        "encoding exec/env/version conventions for agents"
+      ],
       "deck": "author",
       "path": "Groups/Viber/agents-md",
       "owned": false,
@@ -404,7 +475,9 @@
           "references/06-anti-patterns.md",
           "references/07-harness-and-portability.md",
           "references/08-keeping-the-rulebook-current.md",
-          "references/09-privacy-and-visibility.md"
+          "references/09-privacy-and-visibility.md",
+          "references/10-the-nineteen-sections.md",
+          "references/11-verify-before-writing.md"
         ],
         "assets": [
           "assets/templates/AGENTS-template.md"
@@ -414,6 +487,9 @@
       "fit": {
         "role": "Writes the agent rulebook (AGENTS.md)",
         "when": "Project needs agent obligations, conventions, and how-to routing",
+        "serves": [
+          "Idea & Understanding"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -427,6 +503,7 @@
           }
         ],
         "before": [],
+        "with": [],
         "produces": [
           "AGENTS.md"
         ],
@@ -434,10 +511,13 @@
           "IDEA.md",
           ".steering/"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -445,8 +525,14 @@
       ]
     },
     "pages": {
-      "version": "2.0.2",
+      "version": "2.0.3",
+      "type": "battery",
       "description": "A product''s complete page universe: one skill, three modes, one route tree. /pages main plans the core-screen inventory, pruning a 492-row 30-discipline catalog against evidence, splitting mixed concerns, recording redirects/exclusions with reasons. /pages secondary writes the trust documents (ToS, Privacy, Cookies, Contact, Status, DPA, delete-account; scale/phase-gated, one canon each, never invented legal facts). /pages complementary designs the conditional screens that fire only on a trigger, the app fine without them (onboarding, transaction outcomes, HTTP errors, session/access gates, maintenance, token handoffs, relays). Every page is one lean file in a <docs>/pages/ route tree (path = route, _.md root, [param].md dynamic), a shard index.md per directory; kind/access/decisions on the map; nothing a product lacks gets invented. Triggers: plan my pages, legal pages, onboarding flow, error page, callback URL. Not for designing/building screens (prototype, impeccable) or implementation order (planner).",
+      "use_cases": [
+        "planning a product's screen inventory",
+        "secondary pages: ToS, help, pricing",
+        "one route tree with redirects and exclusions"
+      ],
       "deck": "author",
       "path": "Groups/Design/pages",
       "owned": false,
@@ -520,6 +606,9 @@
       "fit": {
         "role": "Plans the complete page universe and route tree",
         "when": "Product concept settled; need screen inventory before prototyping",
+        "serves": [
+          "Vision"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -534,22 +623,26 @@
             "long_hint": "pages delivers the screen universe; prototype turns the named screens into interactive mockups - without the inventory you prototype screens the product doesn't have."
           }
         ],
-        "produces": [
-          "docs/pages/ route tree"
-        ],
-        "consumes": [
-          "IDEA.md"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "reveal",
             "hint": "Landscape feeds the screen plan",
             "long_hint": "reveal shows what already exists out there; pages uses that to decide which screens differentiate and which are copies of competitors."
           }
-        ]
+        ],
+        "produces": [
+          "docs/pages/ route tree"
+        ],
+        "consumes": [
+          "IDEA.md"
+        ],
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -558,7 +651,13 @@
     },
     "prototype": {
       "version": null,
+      "type": "hybrid",
       "description": null,
+      "use_cases": [
+        "interactive mockups with URL-driven states",
+        "design review without a real codebase",
+        "a multi-screen app suite walkthrough"
+      ],
       "deck": "opensource",
       "path": null,
       "owned": false,
@@ -571,6 +670,9 @@
       "fit": {
         "role": "Interactive design prototypes with URL-driven states",
         "when": "Page inventory exists; need to see the experience before building",
+        "serves": [
+          "Vision"
+        ],
         "after": [
           {
             "skill": "pages",
@@ -590,6 +692,7 @@
             "long_hint": "denoise reduces clutter in a finished draft; running it before anti-slop means the design review judges a calm baseline, not prototype noise."
           }
         ],
+        "with": [],
         "produces": [
           "interactive prototype"
         ],
@@ -598,14 +701,20 @@
         ],
         "blockers": [
           "not in registry - awaiting installation or classification"
-        ],
-        "with": []
+        ]
       },
       "history": []
     },
     "denoise": {
-      "version": "1.0.2",
+      "version": "1.0.3",
+      "type": "battery",
       "description": "Transforms crowded, noisy, visually overwhelming UIs into calm, readable, professional interfaces that are easier to use, not just nicer to look at, at one of three intensities: lite (type/spacing in place), medium (redistributes content, designs forms and states), ultra (full re-theme, re-structure, re-derived information architecture and interaction layer). Use when someone shares an existing UI — HTML/CSS, React, Vue, a screenshot, a mockup, an admin panel, a dashboard — and asks to make it cleaner, more readable, less cluttered or noisy, more professional, easier on the eyes, or denoise/calm; or names a lite/medium/ultra pass. Also handles whole-codebase work: rolling a pass across many pages with a generated map and an audited ledger, verifying nothing broke against a real pre-redesign build, and grading which mode was actually delivered so an Ultra request is never quietly answered with a re-skin. For variations before a rollout, use diverge. Refactor/redesign only, not from-scratch. Framework-agnostic.",
+      "use_cases": [
+        "a crowded admin dashboard",
+        "an overwhelming settings page",
+        "a form lost in visual noise",
+        "a full re-theme pass (ultra)"
+      ],
       "deck": "author",
       "path": "Groups/Design/denoise",
       "owned": false,
@@ -649,6 +758,9 @@
       "fit": {
         "role": "Transforms noisy UI into calm, readable interfaces",
         "when": "Existing UI or prototype needs visual cleanup",
+        "serves": [
+          "Vision"
+        ],
         "after": [
           {
             "skill": "prototype",
@@ -663,16 +775,20 @@
             "long_hint": "denoise changes the visual surface while fixing density; running anti-slop on the calmed result avoids reporting the same clutter twice."
           }
         ],
+        "with": [],
         "produces": [
           "cleaned UI"
         ],
         "consumes": [
           "prototype or existing UI"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -681,7 +797,13 @@
     },
     "anti-slop": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Review UI and product-design quality for a page, selected routes, an application, or a repository. Use when asked to find, explain, prioritize, or guide correction of design anti-patterns using visual/contextual evidence, source inspection, or both. Routes through a 67-pattern catalog and keeps findings evidence-based; it does not infer AI authorship or treat style matches as violations.",
+      "use_cases": [
+        "a landing or marketing page before publish",
+        "dashboard UI review",
+        "repo-level design anti-pattern sweep"
+      ],
       "deck": "author",
       "path": "Groups/Audit/anti-slop",
       "owned": false,
@@ -784,6 +906,9 @@
       "fit": {
         "role": "Audits UI against 67 design anti-patterns",
         "when": "UI exists and needs quality review before implementation",
+        "serves": [
+          "Vision"
+        ],
         "after": [
           {
             "skill": "denoise",
@@ -797,14 +922,14 @@
           }
         ],
         "before": [],
+        "with": [],
         "produces": [
           "anti-pattern findings report"
         ],
         "consumes": [
           "UI screenshots or source"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -815,7 +940,13 @@
     },
     "architecture": {
       "version": "2.0.2",
+      "type": "battery",
       "description": "Orchestrates and drafts an application's complete technical architecture documentation suite across its core pillars (language conventions, error handling, visual UI/interaction, relational/SQL data modeling, plugin and settings extensibility under the Open/Closed Principle, cross-platform multi-device mechanics, accessibility/sensory adaptation, and display/notation architecture (how values are expressed - precision levels, container fit, locale display, voice-typeface pairings)), invoking each specialized sub-pillar to author binding specifications into the project's documentation suite (<docs>/ or <docs>/architecture/).",
+      "use_cases": [
+        "a new service or monorepo needing pillar docs",
+        "onboarding engineers to the system shape",
+        "a pre-refactor baseline of conventions and contracts"
+      ],
       "deck": "author",
       "path": "Groups/Viber/architecture",
       "owned": false,
@@ -878,6 +1009,9 @@
       "fit": {
         "role": "Orchestrates the full technical architecture documentation suite",
         "when": "Stack settled; need binding specs for language, errors, UI, DB, plugins, cross-platform, a11y, display",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "commitments-md",
@@ -932,6 +1066,13 @@
             "long_hint": "units is the index of what to extend before writing parallel code; architecture names the parts, units lists them with real paths."
           }
         ],
+        "with": [
+          {
+            "skill": "grill-me",
+            "hint": "Design forks decided by pressure, not taste",
+            "long_hint": "architecture reaches options (stores, layers, queues); grilling each fork surfaces trade-offs before a document freezes the wrong choice."
+          }
+        ],
         "produces": [
           "docs/architecture/ suite"
         ],
@@ -939,14 +1080,7 @@
           ".steering/tech/",
           "IDEA.md"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "grill-me",
-            "hint": "Design forks decided by pressure, not taste",
-            "long_hint": "architecture reaches options (stores, layers, queues); grilling each fork surfaces trade-offs before a document freezes the wrong choice."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -957,7 +1091,13 @@
     },
     "contract": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Documents who owns what across architectural layers as tiny, precise contract files in <docs>/contract/: one responsibility per file, ownership either OoU (exactly one layer owns it) or AoU (all defined layers share it — never dual), with the reason and trade-offs recorded as a durable micro-decision. Use when the user asks where a responsibility belongs (\"where should filtering/validation/retries/caching happen\", \"who owns X\", \"should the frontend or backend do this\"), asks to write, update, list, or check a contract, runs /contract, or when implementing would silently scatter the same logic across layers; also when a scenario needs an explicit exception to an existing rule (hot-path vs default). Layers default to Database(0), Backend(1), Frontend(2), extensible per project; \"application-side\" always means Backend or Frontend, not Backend alone. Not for full architecture documentation (architecture), goals and priorities (commitments-md), vocabulary (glossary-md), or general prose documents (document).",
+      "use_cases": [
+        "two layers both writing one state",
+        "API-boundary ownership disputes",
+        "documenting who may change a shared schema"
+      ],
       "deck": "author",
       "path": "Groups/Decision/contract",
       "owned": false,
@@ -984,6 +1124,9 @@
       "fit": {
         "role": "Documents layer ownership as micro-decision contract files",
         "when": "Architecture exists; responsibilities need explicit ownership",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -998,20 +1141,20 @@
             "long_hint": "contract fixes who owns what across layers; implement needs to know whether its code writes a state it owns or creates through an interface."
           }
         ],
-        "produces": [
-          "docs/contract/ files"
-        ],
-        "consumes": [
-          "architecture specs"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "states",
             "hint": "Ownership is one question on two axes",
             "long_hint": "contract fixes which layer owns a responsibility; states fixes whether a consumer reads or creates a fact - settled together they stop contradictory ownership in the same feature."
           }
-        ]
+        ],
+        "produces": [
+          "docs/contract/ files"
+        ],
+        "consumes": [
+          "architecture specs"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -1022,7 +1165,13 @@
     },
     "pvc": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Role-based UI construction (Page → View → Component, plus Decoration, Aligner, UI Element, Rendition) — framework-agnostic architecture for building or auditing UI code in React, Vue, Solid, Svelte, Blazor, Dioxus or any component system. Use when designing a screen or feature folder, deciding what a piece of UI actually is, separating loading/error/offline handling, placing a shared Component, naming a unit, or when a codebase has become \"everything is a component\". Also use for `scripts/check_pvc.py` audits and `scripts/scaffold_feature.py` skeletons. Classifying a fact as a State or a Condition, and deciding who owns it, is the companion /states skill — invoke both for screen design; this skill needs only whether a unit reads a fact source.",
+      "use_cases": [
+        "designing a screen or feature folder",
+        "auditing UI code's role placement",
+        "deciding what belongs in a component vs a page"
+      ],
       "deck": "author",
       "path": "Groups/Audit/pvc",
       "owned": false,
@@ -1051,6 +1200,9 @@
       "fit": {
         "role": "Role-based UI construction architecture (Page/View/Component)",
         "when": "UI specs exist; need component hierarchy before coding",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1070,6 +1222,7 @@
             "long_hint": "states decides whether a fact is read or created and by whom; pvc defines the owning components first so each classification lands on a real home."
           }
         ],
+        "with": [],
         "produces": [
           "UI role assignments",
           "component tree"
@@ -1078,8 +1231,7 @@
           "architecture/ui specs",
           "docs/pages/"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1090,7 +1242,13 @@
     },
     "states": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Classify any fact an app consults as a State or a Condition, decide who owns it, and settle whether a consumer may read it or must create it. Use when deciding loading vs offline, error vs permission-denied, empty vs feature-flag-off, or any \"is this my own request or something external\" question; when placing a fact source (hook, composable, signal, resource, store, injected service); when a background job, sync worker, or subscription needs an ownership decision; or when a fact is duplicated across consumers. Fact sources return data and never render — the UI roles that consume them belong to the /pvc skill.",
+      "use_cases": [
+        "loading vs offline semantics",
+        "error vs permission-denied screens",
+        "empty vs feature-flag-off distinction"
+      ],
       "deck": "author",
       "path": "Groups/Audit/states",
       "owned": false,
@@ -1109,6 +1267,9 @@
       "fit": {
         "role": "Classifies facts as State/Condition, decides ownership",
         "when": "UI roles decided; need fact-source ownership before coding",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "pvc",
@@ -1123,6 +1284,13 @@
             "long_hint": "states classifies every fact a consumer reads; implement then wires the decided behavior instead of inventing product semantics in code."
           }
         ],
+        "with": [
+          {
+            "skill": "contract",
+            "hint": "Ownership is one question on two axes",
+            "long_hint": "contract fixes which layer owns a responsibility; states fixes whether a consumer reads or creates a fact - settled together they stop contradictory ownership in the same feature."
+          }
+        ],
         "produces": [
           "state/condition classifications"
         ],
@@ -1130,14 +1298,7 @@
           "pvc roles",
           "architecture specs"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "contract",
-            "hint": "Ownership is one question on two axes",
-            "long_hint": "contract fixes which layer owns a responsibility; states fixes whether a consumer reads or creates a fact - settled together they stop contradictory ownership in the same feature."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -1147,8 +1308,15 @@
       ]
     },
     "styling": {
-      "version": "1.0.3",
+      "version": "1.1.1",
+      "type": "battery",
       "description": "Styling experience, one skill, two levels: build (write NEW styling right on any stack — per-module stylesheets, no monolith, role-named tokens as single source of truth, a downward-only layer chain, expressive names, conditional styling as a lookup not a build, runtime values through a dynamic channel) and retrofit (take an EXISTING project''s hardcoded/duplicated styling into a token-driven system: inventory, incumbent gate, one evidence-based native-vs-library decision, pixel-safe migration slices, no-hardcoding guards, before/after parity evidence). The router picks ONE level and reads only its method.md. New work or styling structure is yours → build; existing mess to centralize and prove parity → retrofit. Triggers: organize CSS/XAML/QML, design tokens, style layer chain, inline dumps, built class strings, styleup, style-up, make styles maintainable or professional, remove hardcoded styles, centralize colors/typography/spacing. Not for visual redesign (denoise) or component galleries (components).",
+      "use_cases": [
+        "writing new UI styling on any stack",
+        "migrating hardcoded styles into a token system",
+        "auditing a style system for drift",
+        "reviewing styling PRs against token discipline"
+      ],
       "deck": "author",
       "path": "Groups/Design/Style/styling",
       "owned": false,
@@ -1171,6 +1339,9 @@
       "fit": {
         "role": "Styling system: build (new) or retrofit (existing). Absorbs former styleup skill.",
         "when": "Need token-driven styling architecture or existing mess to centralize",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1185,6 +1356,7 @@
             "long_hint": "styling fixed the module sheet and token system; code written outside the system becomes the drift anti-slop later reports."
           }
         ],
+        "with": [],
         "produces": [
           "styling layer chain",
           "token system"
@@ -1192,10 +1364,13 @@
         "consumes": [
           "architecture/ui specs"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -1204,7 +1379,13 @@
     },
     "typing": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "Type-hinting experience, one skill, two levels: harden (the general craft — brands for raw types, creation points, boundary checks that turn untrusted data into typed values, compiler-first rejection, validation libraries and database constraints, in any language) and tiers (the opt-in three-tier architecture — primitives, brands, shapes — with its conversion path). The router picks ONE level and reads only its method.md. Default to harden; reach for tiers only when the project or user chose it (detect primitives/, brands/, shapes/ folders or the word tiers) — never impose the architecture or a naming scheme. Triggers: improve/tighten/audit types, stringly-typed or primitive-obsessed code, branded/NewType/opaque types, validate config or API contracts, make wrong values an error, type-up, tier-up, tiered types, primitives brands shapes, adopt the tier architecture, promote this to a brand. Golden rule: reuse existing types, never reinvent them. Tier means type-system tiers only, never architecture layers.",
+      "use_cases": [
+        "hardening raw inputs at system boundaries",
+        "adopting tiered typing on a codebase",
+        "reviewing type creation points"
+      ],
       "deck": "author",
       "path": "typing",
       "owned": false,
@@ -1233,6 +1414,10 @@
       "fit": {
         "role": "Type-system hardening: brands, boundary checks, compiler-first rejection. Formerly type-up.",
         "when": "Need to tighten types, eliminate stringly-typed code, validate contracts",
+        "serves": [
+          "Project Foundation",
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1247,20 +1432,20 @@
             "long_hint": "typing turns raw input into typed values at boundaries; retrofitting types onto written code costs more than typing it once."
           }
         ],
-        "produces": [
-          "type hardening specs"
-        ],
-        "consumes": [
-          "architecture/language specs"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "implement",
             "hint": "Type the boundary while the author still knows it",
             "long_hint": "typing hardens raw input at creation points; the author knows what the data really is now - later becomes guesswork."
           }
-        ]
+        ],
+        "produces": [
+          "type hardening specs"
+        ],
+        "consumes": [
+          "architecture/language specs"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -1271,7 +1456,13 @@
     },
     "antipattern": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Investigates a software project, researches the engineering anti-patterns that matter for its stack, gathers evidence from code, architecture, business rules and dependencies, and documents which anti-patterns agents must avoid (usually as ANTIPATTERN.md). Use whenever the user asks about anti-patterns, code smells, AI slop, \"what should we avoid in this codebase\", wants project rules against bad patterns, wants an anti-pattern audit or report, or asks to create or update ANTIPATTERN.md, even if they never say \"anti-pattern\". Findings are rated for impact and confidence separately, kept to what project evidence supports, and a clean audit is a valid result. Identifies, investigates, recommends and documents only. Do NOT use to fix, refactor or enforce rules, for general code review, or to change application behavior.",
+      "use_cases": [
+        "before a stack change, to learn its traps",
+        "after repeated incidents in one layer",
+        "documenting ANTIPATTERN.md for new contributors"
+      ],
       "deck": "author",
       "path": "Groups/Audit/antipattern",
       "owned": false,
@@ -1301,6 +1492,9 @@
       "fit": {
         "role": "Investigates and documents engineering anti-patterns to avoid",
         "when": "Code or architecture exists; need project-specific anti-pattern rules",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1315,6 +1509,7 @@
             "long_hint": "antipattern lists the traps this stack falls into; the implementer reads it before code exists - cheaper than unwinding the code later."
           }
         ],
+        "with": [],
         "produces": [
           "ANTIPATTERN.md"
         ],
@@ -1322,8 +1517,7 @@
           "codebase",
           "architecture specs"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1333,8 +1527,14 @@
       ]
     },
     "readme-md": {
-      "version": "1.0.2",
+      "version": "1.1.0",
+      "type": "normal",
       "description": "Create, review, and update professional README files grounded in the actual project, never in assumptions or nonexistent features. Use when asked to write, fix, or refresh a README or project introduction. It inspects real sources (manifests, entry points, scripts, tests) before writing, separates implemented from planned, identifies the primary audience and picks a project-appropriate structure, asks the README voice/style (minimal / engineering / deep-DX / showcase / hybrid) with facts identical in any veoice, writes motivation without fabricated origin stories, uses only real commands verified against project config, refuses to fabricate badges/links/screenshots, offers motivation-phrasing options when positioning is open, asks only about intent-dependent decisions, and honestly reports what was tested vs reviewed. Preserves useful existing structure when updating; targeted edits; respects git state; draft mode. Triggers: readme, write/update the readme, README is outdated, document this project/repo.",
+      "use_cases": [
+        "a new project's README",
+        "refreshing a stale README against real sources",
+        "auditing README claims against the code"
+      ],
       "deck": "author",
       "path": "Groups/Viber/readme-md",
       "owned": false,
@@ -1342,6 +1542,7 @@
         "entry": "SKILL.md",
         "references": [
           "references/review-checklists.md",
+          "references/structure-and-sections.md",
           "references/voice-and-tone.md"
         ],
         "assets": [],
@@ -1350,6 +1551,9 @@
       "fit": {
         "role": "Creates professional README grounded in actual project state",
         "when": "Project has enough substance to introduce itself",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -1358,6 +1562,7 @@
           }
         ],
         "before": [],
+        "with": [],
         "produces": [
           "README.md"
         ],
@@ -1366,10 +1571,13 @@
           "entry points",
           "scripts"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -1378,7 +1586,13 @@
     },
     "commitments-md": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Creates and maintains COMMITMENTS.md - the project''s declared goals, priorities and trade-offs - or a small Commitments section in AGENTS.md when tiny. Premise: you cannot get the gold in every case. Some goals are mutually exclusive, some reinforce each other, and every priority has a price, a horizon (MVP vs later) and, where possible, a measurable bar. The skill never invents priorities: it collects the stated goals, maps which ones compete, asks which wins when they collide and what is sacrificed, marks the pairs that do not conflict so nobody pays for a fake trade-off, and records the hard constraints that are never traded. Placement: a small set goes into AGENTS.md; a big set (several dimensions, conflict tables, phases) becomes COMMITMENTS.md with a pointer from AGENTS.md. Triggers: ''what are our priorities'', ''what should we sacrifice'', ''is DX more important than perf here'', ''define the trade-offs''. Not the idea itself (idea-md), not choosing the stack (techstack/thebest), not task planning (planner).",
+      "use_cases": [
+        "goals compete and one must cost another",
+        "recording the price of a decision explicitly",
+        "a commitments section for a small AGENTS.md"
+      ],
       "deck": "author",
       "path": "Groups/Viber/commitments-md",
       "owned": false,
@@ -1397,6 +1611,9 @@
       "fit": {
         "role": "Declares goals, priorities, and trade-offs",
         "when": "Competing goals need explicit prioritization",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -1411,6 +1628,7 @@
             "long_hint": "commitments records the goals with their prices; architecture that ignores declared priorities silently reopens settled decisions the history says are closed."
           }
         ],
+        "with": [],
         "produces": [
           "COMMITMENTS.md"
         ],
@@ -1418,8 +1636,7 @@
           "IDEA.md",
           "user priorities"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1430,7 +1647,13 @@
     },
     "glossary-md": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Maintains one unambiguous project vocabulary in alphabetical letter blocks. Golden rule for what earns a block: the word as used here carries more than the dictionary sense - redefined or made-concrete ordinary words (''eye'', ''minimal''), project coinages (''Melody'' for a workflow), private-sense abbreviations, transliterations (Basr, بصر), Franco spellings, names/codenames. The project''s own language is the canon, never English; bilingual terms show both forms together; article-led names file under the head noun (''Pit, The'' under P). Each block: term (acronym spelled out), all forms, a 2-5 line meaning, ''Used in:'' refs; keep identities generic - run ''revoke'' before the glossary leaves the project. Lives in AGENTS.md''s `# Glossary`, extracted to GLOSSARY.md when past the section budget. Self-invoke on learning, write the block in the same task; unknown means stay pending - never invent etymology. Also /glossary-md, ''add this term'', ''what does X mean here''. Owns glossary content; agents-md owns AGENTS.md.",
+      "use_cases": [
+        "the same term means two things in the docs",
+        "onboarding where vocabulary eats days",
+        "keeping GLOSSARY.md true after renames"
+      ],
       "deck": "author",
       "path": "Groups/Viber/glossary-md",
       "owned": false,
@@ -1445,6 +1668,9 @@
       "fit": {
         "role": "Maintains unambiguous project vocabulary",
         "when": "Project terms carry more than dictionary sense",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "idea-md",
@@ -1453,14 +1679,14 @@
           }
         ],
         "before": [],
+        "with": [],
         "produces": [
           "GLOSSARY.md or AGENTS.md glossary section"
         ],
         "consumes": [
           "project conversations"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1471,7 +1697,13 @@
     },
     "system-md": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Produces and maintains SYSTEM-COMPONENTS.md for a confirmed application: an architectural inventory of the functional building blocks - subsystems, services, engines, integrations, processors, data systems, infrastructure - each with purpose, responsibilities, in/out-of-scope ownership, inputs and outputs, error handling, configuration, related components, plus an ASCII relationship map and a \"removing it would\" summary table. Answers \"what exists and what does each piece own\" without reading all the code. Application-scoped: in a monorepo, one document per confirmed app, never one blended document across apps. Reusable-unit catalogs (UI builder blocks, and code units generally) belong to UNITS.md and are owned by units-md, not here; a button or card never appears in SYSTEM-COMPONENTS.md, a queue or rate limiter never in UNITS.md. Documents only - no code changes, no enforcement.",
+      "use_cases": [
+        "a confirmed app needing a component inventory",
+        "ownership boundary checks before a split",
+        "an onboarding map of subsystems and interfaces"
+      ],
       "deck": "author",
       "path": "Groups/Viber/system-md",
       "owned": false,
@@ -1488,6 +1720,9 @@
       "fit": {
         "role": "Architectural inventory of functional building blocks",
         "when": "Application confirmed; need component ownership map",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1502,6 +1737,7 @@
             "long_hint": "system-md lists the subsystems and their responsibilities; implement checks the feature lands in the owning component."
           }
         ],
+        "with": [],
         "produces": [
           "SYSTEM-COMPONENTS.md"
         ],
@@ -1509,8 +1745,7 @@
           "architecture specs",
           "codebase"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1521,7 +1756,13 @@
     },
     "units-md": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Generates, refreshes, and audits a project''s UNITS.md - the index of reusable units an agent reads before implementing, so it extends what exists instead of building a parallel one. Each entry is one row of facts: name, responsibility, where it lives (a path that must exist), what it depends on, what it replaces, its status, and the date the claim was checked; the header carries the four duties agents-md section 4 promises - read it in full first, reuse or extend with a stated reason, add a new reusable unit in the same task, and name who updates it. Built from the code, never from what docs claim or from plausible guesses. Use for \"make a UNITS.md\", \"build the units index / component catalog\", \"we keep reinventing things that exist\", \"refresh UNITS.md\", \"does this already exist\", when AGENTS.md section 4 points at a units file that does not exist, or before a fan-out so workers reuse instead of duplicating. Not a task list, not a backlog, not architecture documentation, and it never edits AGENTS.md itself.",
+      "use_cases": [
+        "before implementing: is there already a unit?",
+        "refreshing UNITS.md after a feature lands",
+        "auditing the units index for dead paths"
+      ],
       "deck": "author",
       "path": "Groups/Viber/units-md",
       "owned": false,
@@ -1543,6 +1784,9 @@
       "fit": {
         "role": "Index of reusable units so agents extend instead of duplicating",
         "when": "Code exists; need reuse catalog before fan-out",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [
           {
             "skill": "architecture",
@@ -1557,14 +1801,14 @@
             "long_hint": "UNITS.md is the pre-implementation read; skipping it is how duplicate helpers get shipped beside working ones."
           }
         ],
+        "with": [],
         "produces": [
           "UNITS.md"
         ],
         "consumes": [
           "codebase"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1575,7 +1819,13 @@
     },
     "packages": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "One run, two jobs over a project''s dependencies, any ecosystem (JS/TS, Python, Go, Rust, JVM, .NET…) and any project shape. Job 1 — redundancy audit: classifies each dependency as explicit (imported) or implicit (needed without any import: toolchain binaries, native/link-time stubs, config plugins, entry-point-discovered packages, blank imports, peer deps, codegen, type-only), flagging for removal only what is neither. Job 2 — freshness: updates via the ecosystem''s first-class tooling when it exists (go mod tidy, bun update --latest, cargo upgrade, uv, dotnet-outdated…), else resolves latest via context7 or registry/web search — never memory; always a before/after report for approval, majors checked against migration guides and real project usage first. Both jobs close with a mandatory verification gate — resolve, typecheck/compile, build, tests, runtime — with commands discovered from the project''s scripts and CI, never invented. Use to audit, dedupe, clean up, update, or modernize dependencies in any stack.",
+      "use_cases": [
+        "dependency redundancy audit",
+        "finding implicit dependencies (toolchain binaries, stubs, plugins)",
+        "version pinning and update planning"
+      ],
       "deck": "author",
       "path": "Groups/Audit/packages",
       "owned": false,
@@ -1591,8 +1841,12 @@
       "fit": {
         "role": "Dependency redundancy audit and freshness update",
         "when": "Dependencies accumulated; need cleanup or modernization",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [],
         "before": [],
+        "with": [],
         "produces": [
           "dependency audit report"
         ],
@@ -1600,8 +1854,7 @@
           "manifests",
           "lockfiles"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1612,7 +1865,13 @@
     },
     "personalize": {
       "version": "1.0.2",
+      "type": "meta",
       "description": "Updates the user''s GLOBAL agent instruction file (the personal AGENTS.md every project loads) so settled questions never get re-asked - an agent asking \"which package manager?\" when the global file answers is the idiot-agent this skill kills. Modes: \"/personalize that i like bun and bunx\" distills a statement into an enforceable preference line (behavior not transcript, explicit exception boundary); bare /personalize asks what to set, showing existing lines; \"/personalize the section X in current AGENTS.md into global\" promotes it - personal defaults up, project decisions stay, machine-specific routed out; copy unless told \"move\". Ladder: current prompt > project AGENTS.md (respects the global; overrides only explicitly) > global preference. Dedupe and refine over append; vague statements sharpened or refused, never written. Triggers: personalize, remember I always prefer, never ask me about X again, set my global default.",
+      "use_cases": [
+        "settled tool preferences (package manager, formatter)",
+        "answers that get re-asked every session",
+        "distilling a chat preference into the global AGENTS.md"
+      ],
       "deck": "author",
       "path": "personalize",
       "owned": false,
@@ -1629,16 +1888,19 @@
       "fit": {
         "role": "Updates global AGENTS.md with settled user preferences",
         "when": "User states a lasting preference that should never be re-asked",
+        "serves": [
+          "Project Foundation"
+        ],
         "after": [],
         "before": [],
+        "with": [],
         "produces": [
           "global AGENTS.md preference lines"
         ],
         "consumes": [
           "user statements"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -1649,7 +1911,13 @@
     },
     "implement": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Mandatory pre-coding protocol before ANY task that writes, modifies, or implements code - language-agnostic. Three gates, in order: (1) a coding brief naming the app/module being coded and which stack-agnostic concerns it touches (interfaces, styling, a11y, navigation, forms, persistence, platform, concurrency, errors, build); (2) root inspection to detect the real toolchain (lockfile decides - bun.lock->bun, package-lock.json->npm, Cargo.lock->cargo, go.mod->go, uv/poetry.lock->python; binding project rules outrank inference); (3) targeted grounding of ONLY the touched concerns in CURRENT official docs for each ecosystem, via the `scrape` skill when available (cache + grep over re-fetching; WebFetch fallback), with trade-off questions to the user instead of silent picks. Use before scaffolding/editing source in any stack (TypeScript frameworks, Rust, Python, Go, ...) - it exists to stop coding from model memory that went stale. Chain with project standards skills when present.",
+      "use_cases": [
+        "before any task that writes code",
+        "producing the pre-coding brief and gates",
+        "walking stack-agnostic concern checklists (a11y, persistence, platform)"
+      ],
       "deck": "author",
       "path": "Groups/Code/implement",
       "owned": false,
@@ -1664,6 +1932,9 @@
       "fit": {
         "role": "Mandatory pre-coding protocol: brief, root inspection, doc grounding",
         "when": "About to write or modify code in any stack",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "antipattern",
@@ -1728,15 +1999,6 @@
             "long_hint": "test writes one-reason-to-fail cases against actual behavior; testing planned-but-unwritten interfaces is speculation."
           }
         ],
-        "produces": [
-          "coding brief",
-          "grounded implementation"
-        ],
-        "consumes": [
-          "architecture specs",
-          "official docs"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "test",
@@ -1748,7 +2010,16 @@
             "hint": "Type the boundary while the author still knows it",
             "long_hint": "typing hardens raw input at creation points; the author knows what the data really is now - later becomes guesswork."
           }
-        ]
+        ],
+        "produces": [
+          "coding brief",
+          "grounded implementation"
+        ],
+        "consumes": [
+          "architecture specs",
+          "official docs"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -1758,8 +2029,15 @@
       ]
     },
     "dbug": {
-      "version": "1.0.2",
+      "version": "1.1.1",
+      "type": "normal",
       "description": "Debug any problem in any codebase, any language — bug, error, exception, crash, 500, timeout, wrong/missing/duplicate data, regression, \"worked before\", \"works on my machine\", flaky, prod-only, or a pasted stack trace — even if the user never says \"debug\". One loop everywhere: see the problem → understand it → form a falsifiable hypothesis → run the cheapest experiment that can refute it → narrow → repeat; negative results delete search-space, so narrowing IS getting closer. Opens the mind with duck debugging: say the full traceback out loud, hop by hop (what enters, what must leave, what actually left) — it exposes the problem before any tooling runs. Stances: root cause not symptom, fix the source of truth, minimal-but-complete across every layer, every bug is a chance to test, controlled observation, honest escalation. Domain playbooks (backend, database, frontend, production), investigation engine, escalation ladder, git forensics, instrumentation, regression-testing load on demand from references/.",
+      "use_cases": [
+        "a pasted stack trace or crash",
+        "flaky prod-only failures",
+        "'worked before' regressions",
+        "wrong, missing or duplicate data reports"
+      ],
       "deck": "author",
       "path": "Groups/Code/dbug",
       "owned": false,
@@ -1776,6 +2054,8 @@
           "references/git-forensics.md",
           "references/hypothesis-and-evidence.md",
           "references/instrumentation.md",
+          "references/loop-stages.md",
+          "references/observation-channels.md",
           "references/pipeline-model.md",
           "references/problem-playbooks.md",
           "references/production.md",
@@ -1795,6 +2075,9 @@
       "fit": {
         "role": "Root-cause debugging loop: hypothesis, experiment, narrow",
         "when": "Any bug, error, crash, regression, or wrong data",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "implement",
@@ -1809,6 +2092,13 @@
             "long_hint": "fix applies the solution and improves the code so the class of bug shrinks; diagnosing first prevents patches that only hide symptoms."
           }
         ],
+        "with": [
+          {
+            "skill": "mistakes",
+            "hint": "Every found bug is a candidate log line",
+            "long_hint": "the mistakes log records where this error class shows up and how it was fixed; dbug sessions feed it while the lesson is fresh."
+          }
+        ],
         "produces": [
           "root cause diagnosis"
         ],
@@ -1816,16 +2106,13 @@
           "error evidence",
           "codebase"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "mistakes",
-            "hint": "Every found bug is a candidate log line",
-            "long_hint": "the mistakes log records where this error class shows up and how it was fixed; dbug sessions feed it while the lesson is fresh."
-          }
-        ]
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -1834,7 +2121,13 @@
     },
     "fix": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "After root-cause diagnosis with dbug, resolve the problem and improve the relevant implementation so the same or similar problems become easier to identify, understand, or prevent in the future. Use together with dbug whenever a problem has been understood and a fix is being applied. Covers immediate fix, local-context generalization, consequences, explicit and implicit references, and consistency. Not a standalone debugger.",
+      "use_cases": [
+        "after dbug found the root cause",
+        "an immediate hot bug with a known cause",
+        "making a bug class harder to repeat next time"
+      ],
       "deck": "author",
       "path": "Groups/Code/fix",
       "owned": false,
@@ -1854,6 +2147,9 @@
       "fit": {
         "role": "Applies root-cause fix and generalizes to prevent recurrence",
         "when": "dbug has identified the root cause",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "dbug",
@@ -1868,20 +2164,20 @@
             "long_hint": "the fixed bug names the path that broke; test turns it into a permanent one-reason-to-fail case so it never silently returns."
           }
         ],
-        "produces": [
-          "fix + generalization"
-        ],
-        "consumes": [
-          "root cause diagnosis"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "mistakes",
             "hint": "The fix is the log entry's second half",
             "long_hint": "mistakes needs the how-fixed alongside the where-found; a fix that is not logged repeats itself in the next file."
           }
-        ]
+        ],
+        "produces": [
+          "fix + generalization"
+        ],
+        "consumes": [
+          "root cause diagnosis"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -1892,7 +2188,13 @@
     },
     "test": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "General testing principles and ethics for any test the agent writes or reviews — unit, integration, contract, e2e, property, invariant, regression, or pipeline. Use whenever writing, refactoring, reviewing, or deciding what tests a change needs. Covers one-reason-to-fail, test vs verifier distinction, test data as contracts, selective execution, minimal mocking with feature-flag style seams, and discrimination. Do not use for project-specific tooling or mandated workflows.",
+      "use_cases": [
+        "deciding what tests a change needs",
+        "reviewing test quality and ethics",
+        "enforcing one-reason-to-fail on a flaky suite"
+      ],
       "deck": "author",
       "path": "Groups/Code/test",
       "owned": false,
@@ -1915,6 +2217,9 @@
       "fit": {
         "role": "Testing principles: one-reason-to-fail, test vs verifier, selective execution",
         "when": "Writing, reviewing, or deciding what tests a change needs",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "fix",
@@ -1944,6 +2249,13 @@
             "long_hint": "refactor promises behavior preservation; only the tests can catch it when the promise breaks."
           }
         ],
+        "with": [
+          {
+            "skill": "implement",
+            "hint": "Code and its tests written by one mind",
+            "long_hint": "test informs code shape (seams, one reason to fail); writing tests alongside each unit beats reconstructing them from a finished file."
+          }
+        ],
         "produces": [
           "tests"
         ],
@@ -1951,14 +2263,7 @@
           "code changes",
           "specs"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "implement",
-            "hint": "Code and its tests written by one mind",
-            "long_hint": "test informs code shape (seams, one reason to fail); writing tests alongside each unit beats reconstructing them from a finished file."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -1969,7 +2274,13 @@
     },
     "code-review": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "Review the changes since a fixed point (commit, branch, tag, merge-base) on two separated axes run as parallel subagents and aggregated side by side, never cross-reranked: Standards (does the diff follow the repo''s documented rules plus a Fowler code-smell baseline that the repo always overrides, skipping what tooling enforces?) and Spec & Quality (is the spec faithfully implemented, judged on correctness, readability, architecture, security, performance?). Carries the Google gate: approve when it definitely improves code health, not perfection; severity labels (Critical/Required/Nit/Optional/FYI); tests reviewed first; change sizing ~100/300/1000 lines; named structural remedies instead of \"this is complex\"; dependency discipline; dead-code ask-before-delete; no-LGTM honesty rules; never accept \"fix it later\". Use before merging, evaluating agent-written code, or when asked \"is this ready\". Not for fixing bugs a review finds (dbug, fix), commit messages (commit), or full-repo security scans (security-scan).",
+      "use_cases": [
+        "a PR before merge",
+        "a standards check after a refactor",
+        "spec-conformance audit across a diff"
+      ],
       "deck": "author",
       "path": "Groups/Code/code-review",
       "owned": false,
@@ -1989,6 +2300,9 @@
       "fit": {
         "role": "Two-axis review: Standards + Spec & Quality",
         "when": "Before merging, evaluating agent-written code, or is this ready",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "test",
@@ -2003,15 +2317,6 @@
             "long_hint": "commit writes history; folding review findings in beforehand keeps the log honest about what was actually shipped."
           }
         ],
-        "produces": [
-          "review report"
-        ],
-        "consumes": [
-          "diff",
-          "repo rules",
-          "specs"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "refactor",
@@ -2023,7 +2328,16 @@
             "hint": "A sweep is a diff; review it like code",
             "long_hint": "update rewrites copy and values everywhere; the standards pass catches the stale copy the sweep missed."
           }
-        ]
+        ],
+        "produces": [
+          "review report"
+        ],
+        "consumes": [
+          "diff",
+          "repo rules",
+          "specs"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -2033,8 +2347,14 @@
       ]
     },
     "refactor": {
-      "version": "1.0.2",
+      "version": "1.1.1",
+      "type": "normal",
       "description": "Surgical code refactoring that improves structure and maintainability without changing behavior. Use when the user says refactor this, clean up this code, fix code smells, extract method, replace conditional, move method, introduce parameter object, eliminate duplication, break down god class/function, improve type safety, or prepare code for a new feature by restructuring. Also trigger for technical debt, smell-driven cleanup, safe transformation sequences, and characterization tests before change. Covers smell catalog, composing methods, moving features, organizing data, simplifying conditionals, and the green-to-green workflow. Not for big-bang rewrites or feature work mixed with structure changes.",
+      "use_cases": [
+        "a named code smell to remove",
+        "extract-method / god-class breakdowns",
+        "a clean pass that must not change behavior"
+      ],
       "deck": "author",
       "path": "Groups/Code/refactor",
       "owned": false,
@@ -2044,6 +2364,7 @@
           "references/composing-methods.md",
           "references/moving-features.md",
           "references/organizing-data.md",
+          "references/practical-patterns.md",
           "references/README.md",
           "references/refactoring-workflow.md",
           "references/simplifying-conditionals.md",
@@ -2055,6 +2376,9 @@
       "fit": {
         "role": "Surgical structure improvement without behavior change",
         "when": "Code smells, duplication, god classes, technical debt",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "test",
@@ -2069,6 +2393,13 @@
             "long_hint": "refactor after commit splits the same work across two units; review findings usually fold in before the commit lands."
           }
         ],
+        "with": [
+          {
+            "skill": "code-review",
+            "hint": "Review findings become refactor moves",
+            "long_hint": "code-review's standards axis names the smell; refactor is the discipline that removes it - paired they close the loop."
+          }
+        ],
         "produces": [
           "refactored code"
         ],
@@ -2076,16 +2407,13 @@
           "codebase",
           "characterization tests"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "code-review",
-            "hint": "Review findings become refactor moves",
-            "long_hint": "code-review's standards axis names the smell; refactor is the discipline that removes it - paired they close the loop."
-          }
-        ]
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -2094,7 +2422,14 @@
     },
     "update": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "Change something everywhere it lives, leaving no stale copy behind. Use for ANY change request: reword copy or docs; rename a term, identifier, file, route, or brand; change a value (price, limit, version, color, date), a behavior, or a rule; alter an interface or schema; swap a dependency; move a path; upgrade, deprecate, or restyle. Trigger on update, change, rename, replace, reword, rebrand, bump, correct, migrate, \"switch X to Y\", \"we no longer do X\", \"it says X but should say Y\", \"make the docs match\", even when only one file, line, or string is named. Pins the claim, finds its source of truth, sweeps by exact text, naming variants, i18n/locale files in every language, tests, docs, config, SEO/a11y text, and by meaning; classifies hits, asks how far to go instead of deciding scope alone, applies, and proves nothing stale remains. Builds a dry-run batch script for wide mechanical edits. Not for new features; for a true defect, find the root cause first.",
+      "use_cases": [
+        "renaming a term across docs and code",
+        "changing a value everywhere it lives",
+        "rewording copy with zero drift",
+        "swapping a dependency with a full sweep"
+      ],
       "deck": "author",
       "path": "Groups/Code/update",
       "owned": false,
@@ -2121,12 +2456,22 @@
       "fit": {
         "role": "Change something everywhere it lives, no stale copy",
         "when": "Rename, reword, rebrand, bump, migrate, correct across all surfaces",
+        "serves": [
+          "Implementation"
+        ],
         "after": [],
         "before": [
           {
             "skill": "commit",
             "hint": "Sweeps land complete or as noise",
             "long_hint": "update changes a value or name everywhere it lives; committing half the sweep leaves stale copies recorded in history."
+          }
+        ],
+        "with": [
+          {
+            "skill": "code-review",
+            "hint": "A sweep is a diff; review it like code",
+            "long_hint": "update rewrites copy and values everywhere; the standards pass catches the stale copy the sweep missed."
           }
         ],
         "produces": [
@@ -2137,14 +2482,7 @@
           "claim",
           "source of truth"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "code-review",
-            "hint": "A sweep is a diff; review it like code",
-            "long_hint": "update rewrites copy and values everywhere; the standards pass catches the stale copy the sweep missed."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -2154,8 +2492,14 @@
       ]
     },
     "commit": {
-      "version": "1.0.2",
+      "version": "1.1.1",
+      "type": "battery",
       "description": "Professional git commits, in two modes. GUIDE (default, writes nothing): detect the repo's incumbent convention from its history, split work into atomic units, stage with git add -p, write an imperative subject that survives git log --oneline, a what/why body, readable trailers - plus scenario calls: when to commit, gray zones, a fix interrupting a feature, wip vocabulary, squash or not, repairing history behind a backup ref. INIT (/commit init): co-author this repository's written commit discipline - read what the history and existing tooling do, ask the eight questions the repo cannot answer (shape, types, budget, named branches, ticket keys, body policy, agent authorship (trailer + branch segment), enforcement), draft one document, merge never clobber existing prose, install nothing: no hook, no git config, no CI file - enforcement is the maintainers' choice. Rails: no --no-verify, no committing unread files, no claiming unrun tests, no rewriting pushed history.",
+      "use_cases": [
+        "turning a messy worktree into atomic commits",
+        "detecting the repo's incumbent commit convention",
+        "pre-push history shaping"
+      ],
       "deck": "author",
       "path": "Groups/Git/commit",
       "owned": false,
@@ -2180,7 +2524,8 @@
           "references/15-releases-tags-bumps.md",
           "references/16-decision-trees.md",
           "references/17-command-reference.md",
-          "references/18-init-the-discipline.md"
+          "references/18-init-the-discipline.md",
+          "references/19-guide-step-by-step.md"
         ],
         "assets": [],
         "examples": [
@@ -2198,6 +2543,9 @@
       "fit": {
         "role": "Professional atomic commits with convention detection",
         "when": "Work is ready to commit; need proper staging and message",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "code-review",
@@ -2227,6 +2575,13 @@
             "long_hint": "gh's checks, PRs and Actions consume committed work; nothing on GitHub is actionable before the commit exists."
           }
         ],
+        "with": [
+          {
+            "skill": "gh",
+            "hint": "Land it, then push it",
+            "long_hint": "gh's PR and Actions work consumes commits; keeping commit hygiene as the gate to shipping makes the two one continuous motion."
+          }
+        ],
         "produces": [
           "git commits"
         ],
@@ -2234,16 +2589,13 @@
           "staged changes",
           "repo convention"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "gh",
-            "hint": "Land it, then push it",
-            "long_hint": "gh's PR and Actions work consumes commits; keeping commit hygiene as the gate to shipping makes the two one continuous motion."
-          }
-        ]
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -2252,7 +2604,14 @@
     },
     "gh": {
       "version": "1.0.2",
+      "type": "battery",
       "description": "All GitHub CLI/Actions work in one router: fix failing CI/PR checks (gh pr checks, gh run view --log-failed, bundled inspect_pr_checks.py; classify workflow-file vs job vs flaky vs infra vs external), auth and tokens (gh auth scopes, GITHUB_TOKEN permissions, 401/403 causes, never paste a token into chat), author or edit .github/workflows YAML (valid YAML is not a valid workflow: the space-hash comment trap, quoting expression scalars, actionlint gate), keep workflows thin (wiring not logic - move run: bodies into checked-in script files, conditions stay declarative, scripts return exit codes and one-line feedback; embedding programs in YAML breaks block-scalar indentation and mixes shell with language errors), and harden (SHA-pinned actions, least-privilege permissions, script-injection defense via env mapping, fork-PR rules, OIDC, concurrency, timeouts). Also gh run rerun, workflow dispatch, artifact/release inspection. Not for GitLab CI, Azure Pipelines, Jenkins, or application YAML unrelated to Actions.",
+      "use_cases": [
+        "failing CI checks triage",
+        "auth and token permission errors",
+        "creating and reviewing PRs",
+        "Actions workflow debugging"
+      ],
       "deck": "author",
       "path": "Groups/Code/gh",
       "owned": false,
@@ -2271,6 +2630,9 @@
       "fit": {
         "role": "GitHub CLI/Actions: CI triage, workflow authoring, hardening",
         "when": "CI failing, PR checks, workflow edits, GitHub operations",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "commit",
@@ -2279,6 +2641,13 @@
           }
         ],
         "before": [],
+        "with": [
+          {
+            "skill": "commit",
+            "hint": "Land it, then push it",
+            "long_hint": "gh's PR and Actions work consumes commits; keeping commit hygiene as the gate to shipping makes the two one continuous motion."
+          }
+        ],
         "produces": [
           "fixed CI",
           "workflows"
@@ -2287,14 +2656,7 @@
           "gh CLI",
           "workflow files"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "commit",
-            "hint": "Land it, then push it",
-            "long_hint": "gh's PR and Actions work consumes commits; keeping commit hygiene as the gate to shipping makes the two one continuous motion."
-          }
-        ]
+        "blockers": []
       },
       "history": [
         {
@@ -2305,7 +2667,13 @@
     },
     "planner": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Enforce rigorous, systematic, language-agnostic planning before implementation. Captures the full request, first clarifies vague or slang-heavy language if needed, then generates structured hypotheses that surface explicit requirements plus professional reading-between-the-lines concerns, gathers local and web context, iterates with the user until hypotheses are approved, and finally produces a solid plan. Use in planning-mode or quest-mode, or whenever the user asks for a plan, architecture outline, implementation roadmap, or disciplined decomposition of a complex task. Triggers include planner, planning mode, quest mode, make a plan, rigorous plan, hypothesis-driven planning.",
+      "use_cases": [
+        "a vague request needing structured hypotheses",
+        "multi-feature work before an implementation plan",
+        "surfacing requirements the user left implicit"
+      ],
       "deck": "author",
       "path": "Groups/Code/planner",
       "owned": false,
@@ -2324,6 +2692,9 @@
       "fit": {
         "role": "Hypothesis-driven planning before complex implementation",
         "when": "Complex task needs rigorous decomposition before coding",
+        "serves": [
+          "Implementation"
+        ],
         "after": [],
         "before": [
           {
@@ -2337,6 +2708,7 @@
             "long_hint": "parallelize waves are decided against the planner's decomposition; parallelizing an unplanned job duplicates decisions across agents."
           }
         ],
+        "with": [],
         "produces": [
           "approved plan"
         ],
@@ -2344,8 +2716,7 @@
           "request",
           "context"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -2356,7 +2727,13 @@
     },
     "parallelize": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Plan and run parallel work: the main agent decides in chat how to fan out a large or newly approved job, keeps the most sensitive work for itself, and hands bounded slices to subagents in waves that respect the harness concurrency cap. Use when the job is large enough to split, a plan was just approved, the user says \"parallelize the work\", \"run agents in parallel\", \"fan this out\", \"use a worker pool\", \"split this across agents\", \"parallelize with staggering\", or the agent sees three or more independent chunks. Core rules: no two agents write the same file; interfaces and naming decided before launch; the main agent never idles while subagents work; wave size follows dependencies and review load; a failed slice re-runs alone; staggering delays start times and never replaces dependency ordering. Not for deciding what to build (planner), writing the brief (subagent), or the pre-code gates (implement).",
+      "use_cases": [
+        "a large approved job worth fanning out",
+        "wave planning under the harness concurrency cap",
+        "keeping sensitive slices in the main agent"
+      ],
       "deck": "author",
       "path": "parallelize",
       "owned": false,
@@ -2381,6 +2758,9 @@
       "fit": {
         "role": "Fan-out bounded slices to subagents in dependency-aware waves",
         "when": "Large approved plan with 3+ independent chunks",
+        "serves": [
+          "Implementation"
+        ],
         "after": [
           {
             "skill": "planner",
@@ -2389,6 +2769,7 @@
           }
         ],
         "before": [],
+        "with": [],
         "produces": [
           "parallel execution results"
         ],
@@ -2396,8 +2777,7 @@
           "approved plan",
           "bounded slices"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": [
         {
@@ -2408,7 +2788,13 @@
     },
     "viber": {
       "version": "1.0.0",
+      "type": "meta",
       "description": "The Viber regime — disciplined vibe-engineering. While a project declares Viber, every agent works under it: relocatable knowledge lands under .viber/, code and root-files stay untouched, open questions / answered decisions / learned facts go to the memory ledger, deferred items surface when unblocked, and drafts stay revisable in [DR]. Its commands are the sibling skills vinit (entry), vcompact (making room) and vflow (task-scale flows). Not for choosing a tech stack (techstack), writing the rulebook (agents-md), closing design topics one by one (close-topics), or running builds and tests.",
+      "use_cases": [
+        "the project declares the Viber regime",
+        "routing: what comes next in the lifecycle",
+        "supervision of relocatable output under .viber/"
+      ],
       "deck": "author",
       "path": "skills/viber",
       "owned": true,
@@ -2435,8 +2821,18 @@
       "fit": {
         "role": "Regime dispatcher: activation, supervision, routing, memory, layout",
         "when": "Always active while project declares Viber in AGENTS.md",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
+        "with": [
+          {
+            "skill": "adapt",
+            "hint": "When the path has no skill, grow one",
+            "long_hint": "the viber regime supervises the lifecycle; adapt fills the capability gap the walk surfaced and proves it was a real gap first."
+          }
+        ],
         "produces": [
           ".viber/ state",
           "supervision rerouting"
@@ -2445,20 +2841,19 @@
           "AGENTS.md declaration",
           ".viber/registry.md"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "adapt",
-            "hint": "When the path has no skill, grow one",
-            "long_hint": "the viber regime supervises the lifecycle; adapt fills the capability gap the walk surfaced and proves it was a real gap first."
-          }
-        ]
+        "blockers": []
       },
       "history": []
     },
     "grill-me": {
       "version": "1.0.2",
+      "type": "normal",
       "description": "Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.",
+      "use_cases": [
+        "stress-testing a plan before building",
+        "a decision resting on one shaky assumption",
+        "the user wants their thinking pressure-tested"
+      ],
       "deck": "author",
       "path": "Groups/Talk/grill-me",
       "owned": false,
@@ -2471,15 +2866,11 @@
       "fit": {
         "role": "Stress-test decisions and plans through relentless questioning",
         "when": "User wants to stress-test thinking, or a decision needs validation",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
-        "produces": [
-          "validated decisions"
-        ],
-        "consumes": [
-          "plan or decision"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "architecture",
@@ -2496,7 +2887,14 @@
             "hint": "Grill hard, freeze nothing",
             "long_hint": "grill-me hardens a decision while thaw keeps the hardened answer from turning into law while the project is still drafting."
           }
-        ]
+        ],
+        "produces": [
+          "validated decisions"
+        ],
+        "consumes": [
+          "plan or decision"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -2506,8 +2904,14 @@
       ]
     },
     "close-topics": {
-      "version": "1.0.2",
+      "version": "1.0.3",
+      "type": "normal",
       "description": "Guided, conversational, topic-by-topic technical specification: close one design area before opening the next. Use when a project has undecided architecture (scrapers, workers, pipelines, caching, data models, queues, storage, deployment) and the user wants to work through it sequentially - ask targeted questions with real options and trade-offs, collect the decision, write it into a specification document in the project''s docs, update the index, then hand off to the next topic. Stops at design: no implementation until every agreed topic is resolved and the user says go. Standalone independent skill. Not for choosing a technology stack (techstack), not for deciding how to build something the agent already owns (dtb), not for planning a task list (planner), not for reorganizing or splitting docs (document).",
+      "use_cases": [
+        "caching, queue or data-model choices still open",
+        "design discussions that keep mixing topics",
+        "turning meeting decisions into written specs"
+      ],
       "deck": "author",
       "path": "close-topics",
       "owned": false,
@@ -2520,17 +2924,11 @@
       "fit": {
         "role": "Close one design topic at a time with documented decisions",
         "when": "Undecided architecture; need sequential topic closure",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
-        "produces": [
-          "spec documents",
-          "closed decisions"
-        ],
-        "consumes": [
-          "open topics",
-          "user decisions"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "steering",
@@ -2542,9 +2940,22 @@
             "hint": "Close topics without reifying them",
             "long_hint": "close-topics writes decisions down; thaw keeps the written record revisable when better options surface later."
           }
-        ]
+        ],
+        "produces": [
+          "spec documents",
+          "closed decisions"
+        ],
+        "consumes": [
+          "open topics",
+          "user decisions"
+        ],
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -2553,7 +2964,13 @@
     },
     "adapt": {
       "version": "1.0.0",
+      "type": "meta",
       "description": "Grows a project''s own Viber version. Viber has fixed foundations, but no two projects walk the same path. When the journey needs a capability nothing covers, adapt proves the gap is real by walking a short ladder (a Viber or deck Skill, a project document, an installable Skill, a how-to recipe) and only when every rung fails creates a small project Skill, preferably an extension of the closest existing Skill. Every adaptation is recorded in the Viber section of the project''s AGENTS.md. Never edits the fixed base, never runs what it creates, never creates a Skill where a document, rule or existing Skill would do. Triggers: ''we keep doing this by hand'', ''no skill covers this'', ''this project needs its own skill'', ''adapt''. Not catalog authoring (skill-creator), fixed recipes (how-to-do), the rest of the rulebook (agents-md).",
+      "use_cases": [
+        "capability gap surfaced by a lifecycle walk",
+        "the project needs its own Viber variant",
+        "no existing skill covers a recurring need"
+      ],
       "deck": "author",
       "path": "skills/adapt",
       "owned": true,
@@ -2566,8 +2983,18 @@
       "fit": {
         "role": "Grows project-specific Viber extensions when no skill covers a need",
         "when": "A need keeps returning that no skill covers; repeated corrections",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
+        "with": [
+          {
+            "skill": "viber",
+            "hint": "When the path has no skill, grow one",
+            "long_hint": "the viber regime supervises the lifecycle; adapt fills the capability gap the walk surfaced and proves it was a real gap first."
+          }
+        ],
         "produces": [
           "project skill or extension",
           "AGENTS.md adaptation record"
@@ -2576,20 +3003,19 @@
           "gap evidence",
           "ladder rungs"
         ],
-        "blockers": [],
-        "with": [
-          {
-            "skill": "viber",
-            "hint": "When the path has no skill, grow one",
-            "long_hint": "the viber regime supervises the lifecycle; adapt fills the capability gap the walk surfaced and proves it was a real gap first."
-          }
-        ]
+        "blockers": []
       },
       "history": []
     },
     "thaw": {
       "version": "1.0.1",
+      "type": "normal",
       "description": "Anti-rigidity posture for drafting and design sessions. Hold docs, doctrines, and the user's prior answers as provisional material, not law; separate stable invariants from draft mechanisms; keep re-validating and aim for iteratively better. Use when an agent reifies a draft into a hard constraint, prunes options by citing draft docs, anchors on its own earlier recommendation, or settles at \"good enough\" — or when the user says \"thaw\", \"thaw this\", \"we're drafting\", \"don't treat the docs as law\", \"question my answer\", \"aim for better\", or \"re-validate yourself\". Pairs with close-topics, techstack, grill-me, and steering.",
+      "use_cases": [
+        "a draft being cited as law mid-design",
+        "an agent anchored on its own old recommendation",
+        "a spec needing revalidation after new evidence"
+      ],
       "deck": "author",
       "path": "thaw",
       "owned": false,
@@ -2608,16 +3034,11 @@
       "fit": {
         "role": "Anti-rigidity posture: hold drafts as provisional, re-validate",
         "when": "Agent reifies drafts as law, anchors on earlier recommendations, stops improving",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
-        "produces": [
-          "re-validated design"
-        ],
-        "consumes": [
-          "draft docs",
-          "prior answers"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "close-topics",
@@ -2629,7 +3050,15 @@
             "hint": "Grill hard, freeze nothing",
             "long_hint": "grill-me hardens a decision while thaw keeps the hardened answer from turning into law while the project is still drafting."
           }
-        ]
+        ],
+        "produces": [
+          "re-validated design"
+        ],
+        "consumes": [
+          "draft docs",
+          "prior answers"
+        ],
+        "blockers": []
       },
       "history": [
         {
@@ -2639,31 +3068,37 @@
       ]
     },
     "mistakes": {
-      "version": "1.0.2",
+      "version": "1.1.1",
+      "type": "normal",
       "description": "A personal, growing log of mistakes already made or observed, with where each one shows up and how to fix it. Use when the user says mistakes, check my mistakes, audit for mistakes, avoid this, remember this mistake, log a mistake, add to my mistakes, lessons learned, I told you before, we already fixed this, or before data modeling, API design, migrations, auth, state management, UI, tests, or configuration. Invoked as /mistakes it audits the project against the active log, reports confirmed findings with file and line evidence, fixes the safe ones (docs, comments, README, tests) and proposes the risky ones (schema, migrations, API contracts, auth, secrets) for approval instead of editing them. It also loads only the rows that match the current task, applies their fixes before the work, runs their checks after it, and appends a new row only when the user asks. Not a style guide, not a generic best-practice list, and never a silent override of the project own documented decisions.",
+      "use_cases": [
+        "repeated errors in documentation and copy",
+        "source-code bug classes and their fix patterns",
+        "config and deployment footguns hit again",
+        "postmortem lessons worth logging once"
+      ],
       "deck": "author",
       "path": "Groups/Agent/mistakes",
       "owned": false,
       "content": {
         "entry": "SKILL.md",
-        "references": [],
+        "references": [
+          "references/adding-a-row.md",
+          "references/audit.md",
+          "references/data-schema.md",
+          "references/mixed-type-field.md"
+        ],
         "assets": [],
         "examples": []
       },
       "fit": {
         "role": "Personal growing log of mistakes with fixes and checks",
         "when": "Before data modeling, API design, auth, state, UI, tests; or user says mistakes",
+        "serves": [
+          "Shared"
+        ],
         "after": [],
         "before": [],
-        "produces": [
-          "mistake log entries",
-          "audit findings"
-        ],
-        "consumes": [
-          "project code",
-          "mistake log"
-        ],
-        "blockers": [],
         "with": [
           {
             "skill": "dbug",
@@ -2675,9 +3110,22 @@
             "hint": "The fix is the log entry's second half",
             "long_hint": "mistakes needs the how-fixed alongside the where-found; a fix that is not logged repeats itself in the next file."
           }
-        ]
+        ],
+        "produces": [
+          "mistake log entries",
+          "audit findings"
+        ],
+        "consumes": [
+          "project code",
+          "mistake log"
+        ],
+        "blockers": []
       },
       "history": [
+        {
+          "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
         {
           "date": "2026-11-16",
           "event": "refreshed from disk"
@@ -2686,7 +3134,13 @@
     },
     "vinit": {
       "version": "1.0.0",
+      "type": "meta",
       "description": "Viber entry command (written /viber init in the spec): indexes the user''s registered Skill deck into .viber/registry.md, asks which deck Skills to exclude from the supervision umbrella and states each consequence, bootstraps the memory files and the project layout''s .gitignore duties, writes the AGENTS.md Viber declaration (the activation marker), then starts the lifecycle at the right step. Re-runnable: refreshes the registry, never erases memory. Not for authoring the rest of AGENTS.md (agents-md owns that) and not for choosing skills.",
+      "use_cases": [
+        "the first Viber run in a project",
+        "registry refresh after the deck changed",
+        "adopting Viber on an existing project"
+      ],
       "deck": "author",
       "path": "skills/vinit",
       "owned": true,
@@ -2703,8 +3157,10 @@
       "fit": {
         "role": "Entry command: deck registry, exclusions, memory bootstrap, AGENTS.md declaration",
         "when": "First Viber run in a project, or a refresh",
+        "serves": [],
         "after": [],
         "before": [],
+        "with": [],
         "produces": [
           ".viber/registry.md",
           ".viber/memory files",
@@ -2714,14 +3170,19 @@
           "user deck",
           "project state"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": []
     },
     "vcompact": {
       "version": "1.0.0",
+      "type": "meta",
       "description": "Viber compaction command: moves accumulated finished history — settled memory rows, superseded doc iterations, finished task trails, keeper artifact batches — into a manifest-first, restorable archive under .viber/.compact/<id>/, freeing active disk and attention while keeping everything reachable. Never touches active work; ambiguous targets are asked with a recommendation. Supports /vcompact restore <id> (move back, collisions asked). Not a backup, not a delete, not automatic — and not a cleaner for code.",
+      "use_cases": [
+        "archiving settled memory rows",
+        "clearing superseded doc iterations",
+        "restoring a compacted archive"
+      ],
       "deck": "author",
       "path": "skills/vcompact",
       "owned": true,
@@ -2738,8 +3199,10 @@
       "fit": {
         "role": "Compaction: manifest-first restorable archiving of finished history",
         "when": "Active area grown fat with history; phase closes; user says free space",
+        "serves": [],
         "after": [],
         "before": [],
+        "with": [],
         "produces": [
           ".viber/.compact/<id>/ archive"
         ],
@@ -2748,14 +3211,19 @@
           "superseded docs",
           "finished trails"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": []
     },
     "vflow": {
       "version": "1.0.0",
+      "type": "meta",
       "description": "Viber flow command: captures a recurring class of work as a task-scale mini-lifecycle — three small files under .viber/flow/<name>/: sequence.md (the source: per-step contract with skill, input, output, done-gate, on-fail), lifecycle.md (the readable map of stages and gates), lifecycle.mmd (the picture, per use-mmd). Steps compose existing Skills only; a flow orders work and never overrides project policy. Supports create / list / edit and running a flow step by step.",
+      "use_cases": [
+        "a recurring task chain worth a mini-lifecycle",
+        "writing sequence.md contracts per step",
+        "a flow map for team handoffs"
+      ],
       "deck": "author",
       "path": "skills/vflow",
       "owned": true,
@@ -2775,8 +3243,10 @@
       "fit": {
         "role": "Task-scale mini-lifecycles: sequence.md as source of truth",
         "when": "Same multi-step sequence keeps being hand-assembled for same work class",
+        "serves": [],
         "after": [],
         "before": [],
+        "with": [],
         "produces": [
           ".viber/flow/<name>/ (3 files)"
         ],
@@ -2784,8 +3254,7 @@
           "recurring work pattern",
           "existing skills"
         ],
-        "blockers": [],
-        "with": []
+        "blockers": []
       },
       "history": []
     }
@@ -2814,6 +3283,22 @@
     {
       "date": "2026-11-16",
       "event": "census sync: 35 skill versions refreshed from disk frontmatter"
+    },
+    {
+      "date": "2026-11-16",
+      "event": "lifecycle agnostication: steps declare goal/needs/commands only; skill bindings moved to fit.serves; Viber is a favorite-deck host, any deck skill can serve any step"
+    },
+    {
+      "date": "2026-11-16",
+      "event": "every skill entry gained type (battery|meta|normal|hybrid|otherwise-value command) and use_cases[] covering the domains it actually applies to"
+    },
+    {
+      "date": "2026-11-16",
+      "event": "type enum fixed to battery|meta|normal|hybrid|otherwise; v-commands reclassified as meta; otherwise reserved for unclassifiable schemas"
+    },
+    {
+      "date": "2026-11-16",
+      "event": "steps declare possible_skills: the favorite-deck candidate pool per step; serves stays the per-project installed binding; gap between them is vinit/agent suggestion work"
     }
   ]
 }
