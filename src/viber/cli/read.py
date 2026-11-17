@@ -1,4 +1,4 @@
-"""Read commands: skill, step, next, deck, status, list, stats, patterns.
+"""Read commands: skill, step, next, deck, status, situation, list, stats, patterns.
 
 Handlers declare the seven global options explicitly (standard typer style) and
 assemble `Globals` in one line.
@@ -21,7 +21,7 @@ from viber.cli.deps import (
     command,
 )
 from viber.core import census_ops, resolution
-from viber.models.domain import FormatKind, Profile
+from viber.core import lint as lint_core
 from viber.output.emit import emit
 
 
@@ -44,7 +44,9 @@ def _fail(msg: str) -> int:
 def skill_cmd(
     name: str,
     content: bool | None = typer.Option(
-        None, "--content/--no-content", help="Include the content file tree"
+        None,
+        "--content/--no-content",
+        help="Content file paths only (with --content); omit the tree (with --no-content)",
     ),
     path_only: bool = typer.Option(False, "--path", "-p", help="Print the disk path only"),
     brief: bool = typer.Option(False, "--brief", "-b", help="One-line summary"),
@@ -57,12 +59,12 @@ def skill_cmd(
         None, "--long", "-l", help="Show relation long_hint detail"
     ),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -87,6 +89,9 @@ def skill_cmd(
             "long_hints": long_hints,
         },
     )
+    if content:
+        # the flag contract: --content means "paths only", not "add the tree"
+        sel = ["skill", "content"]
     emit("skill", payload, sel, g.target())
     return 0
 
@@ -99,12 +104,12 @@ def step_cmd(
     roster: bool = typer.Option(True, "--roster/--no-roster"),
     commands: bool = typer.Option(True, "--commands/--no-commands"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -145,12 +150,12 @@ def next_cmd(
     suggestion: bool | None = typer.Option(None, "--suggestion/--no-suggestion"),
     long_hints: bool | None = typer.Option(None, "--long", "-l"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -169,12 +174,12 @@ def deck_cmd(
     name: str | None = typer.Argument(None),
     skills: bool | None = typer.Option(None, "--skills/--no-skills"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -189,12 +194,12 @@ def deck_cmd(
 @command
 def status_cmd(
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     emit("status", resolution.status_payload(g.load()), g.selection_with("status"), g.target())
@@ -207,12 +212,12 @@ def list_cmd(
     by: str = typer.Option("name", "--by", help="name|version|type|deck|step"),
     flt: str = typer.Option("", "--filter", help="key=value[,key=value]"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     payload = resolution.list_payload(g.load(), by=by, flt=flt or None, brief=brief)
@@ -225,12 +230,12 @@ def stats_cmd(
     name: str | None = typer.Argument(None),
     since: str = typer.Option("", "--since", help="YYYY-MM-DD lower bound"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -257,12 +262,12 @@ def stats_cmd(
 def patterns_cmd(
     top: int = typer.Option(15, "--top", min=1),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     assert g.load() is not None  # census presence validated for the uniform contract
@@ -277,12 +282,58 @@ def patterns_cmd(
     return 0
 
 
+@command
+def situation_cmd(
+    census: CensusOpt = None,
+    fmt: FormatOpt = None,
+    out: OutOpt = None,
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
+) -> int:
+    """One call answering "what is the situation": phase, step, roster, usage,
+    next move with its reasons, and the decisions still owed by the user."""
+    g = Globals(census, fmt, out, force, profile, include, exclude)
+    data = g.load()
+    step_name = resolution.current_step(data)
+    if step_name is None:
+        return _fail("no current step")
+    rows = resolution.roster_rows(data, step_name)
+    db = g.db()
+    usage_rows: list[dict[str, object]] = db.all_stats() if db.exists() else []
+    nxt = resolution.next_candidates(data, db, count=1)
+    top = nxt["candidates"][0] if nxt["candidates"] else None
+    payload: dict[str, Any] = {
+        "phase": data.projectPhase,
+        "step": step_name,
+        "total": len(data.skills),
+        "blocked": sum(1 for e in data.skills.values() if e.fit.blockers),
+        "unclassified": len(data.unclassified),
+        "roster": [{"name": r.name, "version": r.version, "status": r.status} for r in rows],
+        "usage": {"present": db.exists(), "rows": usage_rows},
+        "next": (
+            None
+            if top is None
+            else {"skill": top["skill"], "when": top["when"], "reasons": top["reasons"]}
+        ),
+        "open": [
+            f"{f.subject}: {f.question}"
+            for f in lint_core.run_lint(data, g.census_path)
+            if f.question is not None
+        ],
+    }
+    emit("situation", payload, g.selection_with("situation"), g.target())
+    return 0
+
+
 COMMANDS: dict[str, Callable[..., None]] = {
     "skill": skill_cmd,
     "step": step_cmd,
     "next": next_cmd,
     "deck": deck_cmd,
     "status": status_cmd,
+    "situation": situation_cmd,
     "list": list_cmd,
     "ls": list_cmd,
     "stats": stats_cmd,

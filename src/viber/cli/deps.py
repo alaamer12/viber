@@ -1,14 +1,20 @@
 """Global option plumbing: shared Annotated types + builder, and the command decorator
 that maps domain exceptions to the exit-code contract (0 ok, 1 invalid/findings,
-2 usage). Handlers declare the global options explicitly — 100% standard typer."""
+2 usage). Handlers declare the global options explicitly — 100% standard typer.
+Defaults are sentinels (None): the real value comes from the settings chain
+flag > env > project config > user config > built-in default (core.settings)."""
 
 import functools
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Annotated, Any
 
 import typer
 
+from viber.core.settings import Flags, resolve
+from viber.data import config_store
+from viber.data.config_store import ConfigError
 from viber.data.store import CensusError, CensusUsageError, load_census, resolve_census_path
 from viber.data.telemetry import TelemetryDB
 from viber.models.domain import FormatKind, Profile
@@ -16,35 +22,53 @@ from viber.models.schema import Census
 from viber.output.emit import EmitError, EmitTarget
 from viber.output.profiles import ProfileError, resolve_selection
 
-CensusOpt = Annotated[str | None, typer.Option("--census", "-C", help="Override census path")]
-FormatOpt = Annotated[FormatKind, typer.Option("--format", "-f", help="Output format")]
+CensusOpt = Annotated[
+    str | None, typer.Option("--census", "-C", help="Census path [env VIBER_CENSUS]")
+]
+FormatOpt = Annotated[
+    FormatKind | None, typer.Option("--format", "-f", help="Output format [env VIBER_FORMAT]")
+]
 OutOpt = Annotated[Path | None, typer.Option("--out", "-o", help="Flush output to file")]
-ForceOpt = Annotated[bool, typer.Option("--force/--no-force", help="Overwrite --out target")]
-ProfileOpt = Annotated[Profile, typer.Option("--profile", "-P", help="Output profile")]
-IncludeOpt = Annotated[str, typer.Option("--include", help="Comma list of extra fields")]
-ExcludeOpt = Annotated[str, typer.Option("--exclude", help="Comma list of dropped fields")]
+ForceOpt = Annotated[
+    bool | None, typer.Option("--force/--no-force", help="Overwrite --out target")
+]
+ProfileOpt = Annotated[
+    Profile | None, typer.Option("--profile", "-P", help="Output profile [env VIBER_PROFILE]")
+]
+IncludeOpt = Annotated[str | None, typer.Option("--include", help="Comma list of extra fields")]
+ExcludeOpt = Annotated[str | None, typer.Option("--exclude", help="Comma list of dropped fields")]
 
 
 class Globals:
-    """Resolved global options for one invocation."""
+    """Resolved settings for one invocation (flags through the config chain)."""
 
     def __init__(
         self,
         census: str | None,
-        fmt: FormatKind,
+        fmt: FormatKind | None,
         out: Path | None,
-        force: bool,
-        profile: Profile,
-        include: str,
-        exclude: str,
+        force: bool | None,
+        profile: Profile | None,
+        include: str | None,
+        exclude: str | None,
     ) -> None:
-        self.census_path = resolve_census_path(census or None)
-        self.fmt = fmt
-        self.out = out
-        self.force = force
-        self.profile = profile
-        self.include = tuple(_csv(include))
-        self.exclude = tuple(_csv(exclude))
+        loaded = config_store.load(os.environ)
+        settings = resolve(
+            Flags(census, fmt, out, force, profile, include, exclude),
+            os.environ,
+            loaded.project,
+            loaded.user,
+        )
+        for warning in settings.warnings:
+            typer.secho(f"warning: {warning}", fg="yellow", err=True)
+        self.settings = settings
+        self.census_path = resolve_census_path(settings.census)
+        self.fmt = settings.format
+        self.out = settings.out
+        self.force = settings.force
+        self.profile = settings.profile
+        self.include = settings.include
+        self.exclude = settings.exclude
 
     def selection(self, command: str) -> list[str]:
         return resolve_selection(command, self.profile, self.include, self.exclude)
@@ -82,10 +106,6 @@ class Globals:
         return load_census(self.census_path)
 
 
-def _csv(value: str | None) -> list[str]:
-    return [v.strip() for v in (value or "").split(",") if v.strip()]
-
-
 def command(fn: Callable[..., int]) -> Callable[..., None]:
     """Wrap `def h(..., g-built options...) -> int`: exception mapping + exit code."""
 
@@ -93,7 +113,7 @@ def command(fn: Callable[..., int]) -> Callable[..., None]:
     def wrapper(*args: Any, **kwargs: Any) -> None:
         try:
             code = fn(*args, **kwargs)
-        except (CensusError, EmitError, KeyError) as exc:
+        except (CensusError, EmitError, ConfigError, KeyError) as exc:
             typer.secho(f"error: {exc}", fg="red", err=True)
             raise typer.Exit(1) from exc
         except (ProfileError, CensusUsageError, ValueError) as exc:

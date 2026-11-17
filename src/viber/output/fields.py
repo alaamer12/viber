@@ -66,6 +66,17 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
         _f("blocked", "counts", _STD_FULL),
         _f("unclassified", "counts", _STD_FULL),
     ),
+    "situation": (
+        _f("phase", "core", _ALL),
+        _f("step", "core", _ALL),
+        _f("total", "counts", _STD_FULL),
+        _f("blocked", "counts", _STD_FULL),
+        _f("unclassified", "counts", frozenset({Profile.FULL})),
+        _f("roster", "state", _STD_FULL),
+        _f("usage", "state", _STD_FULL),
+        _f("next", "decision", _STD_FULL),
+        _f("open", "decision", _STD_FULL),
+    ),
     "list": (
         _f("count", "core", _ALL),
         _f("skills", "rows", _ALL),
@@ -86,6 +97,16 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
     "lint": (
         _f("summary", "core", _ALL),
         _f("findings", "rows", _STD_FULL),
+    ),
+    "config": (
+        _f("keys", "rows", _ALL),
+        _f("key", "core", _ALL),
+        _f("value", "core", _ALL),
+        _f("source", "detail", _STD_FULL),
+        _f("default", "detail", frozenset({Profile.FULL})),
+        _f("project", "source", _ALL),
+        _f("user", "source", _ALL),
+        _f("plugin_dirs", "source", _STD_FULL),
     ),
 }
 

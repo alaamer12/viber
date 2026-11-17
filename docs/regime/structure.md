@@ -92,7 +92,9 @@ live here:
   the shape (tasks, dependencies, sequencing, arguments) is the point, not the tool.
 
 Either shape: tasks declare dependencies, compose in sequence, and take arguments; they are ordinary
-committed code, not configuration files the agent must reverse-engineer.
+committed code, not configuration files the agent must reverse-engineer. (That rejection is about
+*task definitions* masquerading as config sprawl; the CLI's own five-key settings file — `config.md` —
+is the opposite kind: tiny, CLI-written, self-documenting through `viber config list`.)
 
 - The boundary with `tools/`: scripts **are run** — they execute the project's operations and tasks,
   whatever the verb; tools **are used** — reusable capabilities that inspect, capture, generate, or compare,
@@ -187,6 +189,8 @@ scratch/
 - `.viber/` is **recommended gitignored** — it holds per-project runtime data (census, telemetry, memory)
   that is regenerable by `vinit`. The user may opt out (commit it) when they want the ledger shared across
   clones or machines. `vinit` asks once during its gitignore step and records the choice.
+- When `.viber/` is ignored, the exception worth un-ignoring is `.viber/.data/config.json` — the project
+  settings layer is meant to be shared (`!.viber/.data/config.json`); the user layer never is.
 - A declared-private path missing from `.gitignore` is a defect: fix the ignore line in the same change
   (`agents-md` privacy-sync duty).
 

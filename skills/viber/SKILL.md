@@ -39,6 +39,7 @@ normally, and say once that `/vinit` would set the regime. Never write or remove
 | Where does this artifact go? Supervision active? Participation? | `references/supervision.md` |
 | Canonical layout, home of every file kind, git treatment | `references/structure.md` |
 | Memory files: templates, field rules, move-on-answer discipline | `references/memory.md` |
+| Settings chain: config get/set, layers, telemetry/plugins switches | `references/config.md` |
 | Progress tracking, next-step logic, skill suggestions, warnings | `references/router.md` |
 | A subsystem diagram (render or edit) | `assets/diagrams/*.mmd` |
 | Bootstrapping a memory file from scratch | `assets/templates/*.md` |
@@ -56,7 +57,7 @@ normally, and say once that `/vinit` would set the regime. Never write or remove
 ```text
 viber/
 ├── SKILL.md              this posture
-├── references/           lifecycle · supervision · structure · memory · router
+├── references/           lifecycle · supervision · structure · memory · router · config
 └── assets/
     ├── diagrams/         the four flow diagrams (.mmd, obey use-mmd)
     └── templates/        empty memory.md / settled.md / learnt.md

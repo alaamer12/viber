@@ -13,6 +13,7 @@ This repository is the independent source for the Viber skill suite: the design 
 | Understand the supervision umbrella | [docs/regime/supervision.md](docs/regime/supervision.md) |
 | See the canonical project layout Viber enforces | [docs/regime/structure.md](docs/regime/structure.md) |
 | Understand the memory ledger | [docs/regime/memory.md](docs/regime/memory.md) |
+| Understand the settings chain and plugin surface | [docs/regime/config.md](docs/regime/config.md) |
 | Read a command's design spec (init / compact / flow) | [docs/commands/init.md](docs/commands/init.md) · [docs/commands/compact.md](docs/commands/compact.md) · [docs/commands/flow.md](docs/commands/flow.md) |
 | See what agents actually execute | [skills/](skills/) — each subfolder is an installable skill |
 | Understand how drafts become shipped skills | [PIPELINE.md](PIPELINE.md) |
@@ -26,9 +27,8 @@ viber/
 ├── docs/           design drafts — provisional, iterated, grilled
 ├── skills/         shipped agent skills — lean, imperative, installed via symlink
 ├── src/viber/  the census CLI package (typer + pydantic, strict mypy)
-├── tests/          pytest suites incl. legacy-parity against the first-commit seed
+├── tests/          pytest suites incl. byte-exact seed round-trip parity
 ├── viber.json      master seed census — every skill, relation, hint and reason
-├── viber.py        launcher shim — keeps `python viber.py <cmd>` working anywhere
 ├── pyproject.toml  uv-managed, hatchling build, console script `viber`
 └── PIPELINE.md     the draft → settle → promote → verify → ship workflow
 ```
@@ -41,16 +41,19 @@ Install once, project-local (never the user environment):
 cd "F:/Projects/Agent/projects/viber"
 uv sync                       # creates .venv, installs deps + the viber script
 uv run viber status           # phase, current step, counts
+uv run viber situation        # the whole picture in one call: status, usage, next, owed decisions
 uv run viber next -n 3        # next unblocked skills, each with its reasons
 uv run viber skill steering -P full -f json
 uv run viber next -o plan.txt # compact flush (txt default; --format json for data)
 uv run viber lint             # census audit; conflicts surface as ASK USER decisions
+uv run viber config list      # the settings chain: value, source layer, default per key
+uv run viber config set profile full   # state a preference once, visibly; flags still win
 ```
 
-`python viber.py <cmd> ...` keeps working from any project as the launcher shim
-(AGENTS.md instruction unchanged): it runs the package in-process, falls back to
-this project's `.venv` or `uv run`, and otherwise prints the exact bootstrap
-commands — it never installs anything silently.
+Run the CLI as `viber <cmd>` (console script after `uv sync`/install) or
+`python -m viber <cmd>` — both enter the same `viber.app:main`. No launcher shim:
+`viber.py` is gone; `python -m viber` from this checkout's venv is the portable
+entry, and output is always UTF-8 regardless of the Windows console codepage.
 
 Building the distributable: `uv build` → `dist/viber-<version>.whl` + sdist.
 Publishing (`uv publish`) is a deliberate decision, not an automatic step.
@@ -61,4 +64,4 @@ Viber owns its five skills (`viber`, `vinit`, `vcompact`, `vflow`, `adapt`). The
 
 ## Status
 
-The project is in [DR] Draft / [IP] In-Progress. Design docs are provisional (thaw posture applies). Shipped skills are functional and installed. The CLI is production-grade: strict typing, full test suite, legacy output parity, packaged wheel. Post-production [PP] begins at first real release.
+The project is in [DR] Draft / [IP] In-Progress. Design docs are provisional (thaw posture applies). Shipped skills are functional and installed. The CLI is production-grade: strict typing, full test suite, byte-exact seed round-trip parity, packaged wheel. Post-production [PP] begins at first real release.

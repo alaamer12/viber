@@ -158,6 +158,50 @@ def render_status(p: dict[str, Any], sel: list[str]) -> str:
     return "\n".join(lines)
 
 
+def render_situation(p: dict[str, Any], sel: list[str]) -> str:
+    lines = [f"phase: {p.get('phase', '-')}", f"step: {p.get('step', '-')}"]
+    if _selected(sel, "total"):
+        bits = [f"skills: {p.get('total', 0)}", f"blocked: {p.get('blocked', 0)}"]
+        if _selected(sel, "unclassified"):
+            bits.append(f"unclassified: {p.get('unclassified', 0)}")
+        lines.append(" · ".join(bits))
+    if _selected(sel, "roster") and p.get("roster"):
+        rows = [[r["name"], r["version"], r["status"]] for r in p["roster"]]
+        lines += ["", "step roster"] + _table(rows, ["Skill", "Version", "Status"])
+    if _selected(sel, "usage"):
+        usage = p.get("usage") or {}
+        lines += ["", "usage"]
+        if not usage.get("present"):
+            lines.append("(no telemetry yet)")
+        elif not usage.get("rows"):
+            lines.append("(nothing recorded yet)")
+        else:
+            rows = [
+                [
+                    str(r["skill"]),
+                    str(r["count"]),
+                    str(r["lastUsed"] or "-"),
+                    str(r["ok"]),
+                    str(r["fail"]),
+                ]
+                for r in usage["rows"]
+            ]
+            lines += _table(rows, ["Skill", "Uses", "Last Used", "OK", "Fail"])
+    if _selected(sel, "next"):
+        nxt = p.get("next")
+        lines += ["", "next"]
+        if nxt is None:
+            lines.append("(nothing unblocked)")
+        else:
+            lines.append(f"{nxt['skill']} — {nxt.get('when') or '-'}")
+            lines += [f"- {r}" for r in nxt.get("reasons", [])]
+    if _selected(sel, "open"):
+        open_items = p.get("open") or []
+        lines += ["", "open decisions"]
+        lines += [f"ASK USER — {q}" for q in open_items] if open_items else ["(none)"]
+    return "\n".join(lines)
+
+
 def render_list(p: dict[str, Any], sel: list[str]) -> str:
     rows = p.get("skills", [])
     if p.get("brief"):
@@ -198,6 +242,26 @@ def render_patterns(p: dict[str, Any], sel: list[str]) -> str:
         return "no telemetry data yet"
     table = [[r["sequence"], str(r["count"])] for r in p.get("rows", [])]
     return "\n".join(_table(table, ["Sequence", "Count"]))
+
+
+def render_config(p: dict[str, Any], sel: list[str]) -> str:
+    if "keys" in p:
+        rows = [
+            [k["key"], str(k["value"]), k["source"], str(k["default"])] for k in p["keys"]
+        ]
+        return "\n".join(_table(rows, ["Key", "Value", "Source", "Default"]))
+    if "project" in p and "key" not in p:
+        lines = [f"project: {p['project']}", f"user: {p['user']}"]
+        if _selected(sel, "plugin_dirs") and p.get("plugin_dirs"):
+            lines += ["", "plugin dirs (loading gated by the 'plugins' key, default off)"]
+            lines += [f"- {d}" for d in p["plugin_dirs"]]
+        return "\n".join(lines)
+    lines = [f"{p['key']}: {p['value']}"]
+    if _selected(sel, "source"):
+        lines.append(f"source: {p.get('source', '-')}")
+    if _selected(sel, "default"):
+        lines.append(f"default: {p.get('default', '-')}")
+    return "\n".join(lines)
 
 
 def render_lint(p: dict[str, Any], sel: list[str]) -> str:
@@ -248,10 +312,12 @@ RENDERERS: Final[dict[str, Renderer]] = {
     "next": render_next,
     "deck": render_deck,
     "status": render_status,
+    "situation": render_situation,
     "list": render_list,
     "stats": render_stats,
     "patterns": render_patterns,
     "lint": render_lint,
+    "config": render_config,
     "ack": render_ack,
     "ack-show": render_write_ack,
     "drift": render_drift,

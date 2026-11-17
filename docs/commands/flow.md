@@ -66,14 +66,14 @@ its steps.
 ### Truth order
 
 When the three files disagree, **`sequence.md` is the source** — it carries the step contracts.
-`../regime/lifecycle.md` is the readable map, `lifecycle.mmd` the picture. Fix a disagreement by editing the prose and
+`lifecycle.md` is the readable map, `lifecycle.mmd` the picture. Fix a disagreement by editing the prose and
 the diagram to match the sequence, or revising the sequence itself if the sequence is what changed.
 
 ---
 
 ## 4. The Three Files
 
-### 4.1. `../regime/lifecycle.md`
+### 4.1. `lifecycle.md`
 
 The flow's small version of Viber's lifecycle: one paragraph on what the flow is for, the ordered stages with
 one line each, and the gate that ends each stage. Written so a new agent can read it in ten seconds and know
@@ -167,7 +167,7 @@ files → a run walks the sequence with gates → findings land in memory.
 ## 10. Open Items
 
 1. **Trigger matching.** How the Router decides "this work matches `create-new-page`" — a trigger line in
-   `../regime/lifecycle.md`, keywords from the flow's name, or the user's word only.
+   `lifecycle.md`, keywords from the flow's name, or the user's word only.
 2. **Flow self-refinement.** Beyond write-back of missed steps: whether a finished run should propose gate or
    order edits (sequence.md evolution with evidence).
 3. **Flow-of-flows.** Whether one flow may call another (a commit step that runs the `hotfix` flow) — allowed,

@@ -89,12 +89,16 @@ After install: verify a symlink resolves (`test -f ~/.qoder/skills/viber/SKILL.m
 
 ## The census and telemetry
 
-The agent never hand-edits `viber.json`. All reads and writes go through the `viber` CLI
-(the `viber` package; `viber.py` is only the launcher shim). Setup once: `uv sync` in this
+The agent never hand-edits `viber.json` or `.viber/.data/config.json`. All reads and
+writes go through the `viber` CLI
+(the `viber` package — run it as `viber <cmd>` or `python -m viber <cmd>`). Setup once: `uv sync` in this
 project creates the isolated `.venv` with typer, pydantic and the `viber` console script.
 
 ```bash
-viber skill idea-md --content   # what files to read
+viber situation                  # phase, step, roster, usage, next, owed decisions — one call
+viber config list                # settings chain: value, source layer, default per key
+viber config set profile full    # state a preference once; explicit flags still win
+viber skill idea-md --content    # content file paths only — what files to read
 viber next                      # what to do next, and why
 viber lint                      # audit census; deck conflicts surface as ASK USER
 viber use idea-md               # record invocation (AGENTS.md instruction)
@@ -108,6 +112,7 @@ Per-project data lives at `.viber/.data/`:
 |---|---|
 | `viber.json` | Census: every skill's version, description, content paths, fit, blockers, history |
 | `telemetry.db` | SQLite: invocations, outcomes, patterns. Feeds `stats`, `patterns`, smarter `next` |
+| `config.json` | Settings: the five chain keys (census, profile, format, telemetry, plugins) — see `docs/regime/config.md` |
 
 Each skill's `fit` carries its position in the web of work: `after`, `before` and `with` are lists of
 relation objects — `{"skill": "<name>", "hint": "<why this edge exists, one line>",
@@ -146,7 +151,10 @@ Every skill entry also carries what it *is* and what it's *for*:
 `set <skill> type <battery|meta|normal|hybrid|otherwise>` and `set <skill> use_cases '["..."]'`
 keep both writable through the CLI.
 
-The source project's `viber.json` (at project root) is the master seed. `vinit` reads it, studies the user's actual deck, and writes the per-project census into `.viber/.data/`. The `--census <path>` flag overrides resolution for development against the seed.
+The source project's `viber.json` (at project root) is the master seed. In this repo the CLI
+resolves to it automatically when no per-project census exists at `.viber/.data/viber.json`;
+`vinit` reads the seed, studies the user's actual deck, and writes the per-project census into
+`.viber/.data/`. The `--census <path>` flag overrides resolution for any other layout.
 
 ## Layout
 
@@ -155,10 +163,9 @@ projects/viber/
 ├── README.md          project identity and map
 ├── PIPELINE.md        this file
 ├── pyproject.toml     uv/hatchling package definition (console script: viber)
-├── viber.py           launcher shim (keeps `python viber.py <cmd>` working anywhere)
 ├── viber.json         master seed census (42 skills, decks, lifecycle)
 ├── src/viber/     the CLI: cli (parsing) · core (rules) · data (IO) · output (shaping)
-├── tests/             pytest suites incl. legacy-parity against the seed
+├── tests/             pytest suites incl. byte-exact seed round-trip parity
 ├── docs/              design drafts [DR]
 │   ├── index.md       global index
 │   ├── regime/        how Viber governs a project
@@ -173,7 +180,7 @@ projects/viber/
 │   │   ├── init.md
 │   │   ├── compact.md
 │   │   └── flow.md
-│   └── diagrams/      .mmd sources + legacy png
+│   └── diagrams/      .mmd sources
 └── skills/            shipped agent skills [IP]
     ├── viber/         regime dispatcher + references
     ├── vinit/         entry command

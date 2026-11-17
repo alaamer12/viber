@@ -196,3 +196,72 @@ def test_patterns_no_data_message(app: Any, census_file: Path) -> None:
     r = invoke(app, ["patterns"] + census_arg(census_file))
     assert r.exit_code == 0
     assert "no telemetry" in r.output
+
+
+def test_situation_one_call(app: Any, census_file: Path) -> None:
+    r = invoke(app, ["situation"] + census_arg(census_file))
+    assert r.exit_code == 0
+    for section in ("phase:", "step:", "usage", "next", "open decisions"):
+        assert section in r.output
+
+
+def test_situation_json_keys(app: Any, census_file: Path) -> None:
+    r = invoke(app, ["situation", "-f", "json"] + census_arg(census_file))
+    assert r.exit_code == 0
+    data = json.loads(r.output)
+    assert {"phase", "step", "roster", "usage", "next", "open"} <= set(data)
+
+
+def test_skill_content_is_paths_only(app: Any, census_file: Path) -> None:
+    full = invoke(app, ["skill", "steering"] + census_arg(census_file))
+    only = invoke(app, ["skill", "steering", "--content"] + census_arg(census_file))
+    assert only.exit_code == 0
+    assert "description" not in only.output
+    assert "SKILL.md" in only.output
+    assert len(only.output) < len(full.output)
+
+
+class TestSettingsChainCli:
+    def test_env_census_found(self, app: Any, census_file: Path, monkeypatch: Any) -> None:
+        monkeypatch.setenv("VIBER_CENSUS", str(census_file))
+        r = invoke(app, ["status"])
+        assert r.exit_code == 0 and "phase: DR" in r.output
+
+    def test_flag_beats_env(
+        self, app: Any, census_file: Path, tmp_path: Path, monkeypatch: Any
+    ) -> None:
+        monkeypatch.setenv("VIBER_CENSUS", str(tmp_path / "missing.json"))
+        r = invoke(app, ["status", "-C", str(census_file)])
+        assert r.exit_code == 0
+
+    def test_env_profile_changes_output(
+        self, app: Any, census_file: Path, monkeypatch: Any
+    ) -> None:
+        base = invoke(app, ["skill", "steering", "-C", str(census_file)])
+        monkeypatch.setenv("VIBER_PROFILE", "minimal")
+        lean = invoke(app, ["skill", "steering", "-C", str(census_file)])
+        assert "description" in base.output
+        assert "description" not in lean.output
+
+    def test_config_file_layer(
+        self, app: Any, census_file: Path, tmp_path: Path, monkeypatch: Any
+    ) -> None:
+        cfg = tmp_path / "cfg.json"
+        cfg.write_text('{"profile": "minimal"}', encoding="utf-8")
+        monkeypatch.setenv("VIBER_CONFIG", str(cfg))
+        r = invoke(app, ["skill", "steering", "-C", str(census_file)])
+        assert "description" not in r.output
+
+    def test_no_force_tristate(self, app: Any, census_file: Path, tmp_path: Path) -> None:
+        o = tmp_path / "out.txt"
+        o.write_text("old", encoding="utf-8")
+        r = invoke(app, ["status", "-o", str(o), "--no-force", "-C", str(census_file)])
+        assert r.exit_code == 1 and o.read_text(encoding="utf-8") == "old"
+
+    def test_telemetry_off(self, app: Any, census_file: Path, monkeypatch: Any) -> None:
+        monkeypatch.setenv("VIBER_TELEMETRY", "0")
+        r = invoke(app, ["use", "idea-md", "-C", str(census_file)])
+        assert r.exit_code == 0 and "telemetry disabled" in r.output
+        assert not (census_file.parent / "telemetry.db").exists()
+        r2 = invoke(app, ["outcome", "idea-md", "ok", "-C", str(census_file)])
+        assert r2.exit_code == 0 and "telemetry disabled" in r2.output

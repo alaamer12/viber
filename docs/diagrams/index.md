@@ -13,6 +13,5 @@ render existence only.
 | `compact-flow.mmd` | `../commands/compact.md` |
 | `flow-flow.mmd` | `../commands/flow.md` |
 | `router-fit.mmd` | `../regime/router.md` (section 13) |
-| `lifecycle.png` | **legacy** — the old Phase 1–5 visual; kept for history, not direction |
 
 Update this table in the same change that adds, removes or renames a diagram.

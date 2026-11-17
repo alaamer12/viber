@@ -55,6 +55,22 @@ class Outcome(StrEnum):
     SKIP = "skip"
 
 
+class Source(StrEnum):
+    FLAG = "flag"
+    ENV = "env"
+    PROJECT = "project"
+    USER = "user"
+    DEFAULT = "default"
+
+
+class ConfigKey(StrEnum):
+    CENSUS = "census"
+    PROFILE = "profile"
+    FORMAT = "format"
+    TELEMETRY = "telemetry"
+    PLUGINS = "plugins"
+
+
 @dataclass(slots=True, frozen=True)
 class Finding:
     severity: Severity

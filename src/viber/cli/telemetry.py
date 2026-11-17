@@ -17,7 +17,7 @@ from viber.cli.deps import (
 )
 from viber.core.census_ops import current_step, entry_of
 from viber.data.telemetry import now_iso
-from viber.models.domain import FormatKind, Outcome, Profile
+from viber.models.domain import Outcome
 from viber.output.emit import emit
 
 
@@ -30,14 +30,17 @@ def use_cmd(
     skill: str,
     step_override: str = typer.Option("", "--step-override", help="Record under this step name"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
+    if not g.settings.telemetry:
+        _ack(g, "telemetry disabled")
+        return 0
     data = g.load()
     if entry_of(data, skill) is None:
         typer.secho(f"error: skill '{skill}' not in census", fg="red", err=True)
@@ -54,14 +57,17 @@ def outcome_cmd(
     result: Outcome,
     note: str | None = typer.Argument(None),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
+    if not g.settings.telemetry:
+        _ack(g, "telemetry disabled")
+        return 0
     data = g.load()  # census presence validated for the uniform contract
     assert data is not None
     db = g.db()

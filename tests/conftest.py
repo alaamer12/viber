@@ -1,12 +1,22 @@
 """Shared fixtures: a hand-authored mini census and temp telemetry db."""
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from viber.data.telemetry import TelemetryDB
+
+
+@pytest.fixture(autouse=True)
+def hermetic_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """No ambient VIBER_* var or real user config may leak into any test."""
+    for var in [k for k in os.environ if k.startswith("VIBER_")]:
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("VIBER_CONFIG", str(tmp_path / "absent-config.json"))
+    monkeypatch.setenv("VIBER_CONFIG_HOME", str(tmp_path / "absent-config-home"))
 
 MINI: dict[str, Any] = {
     "name": "viber",

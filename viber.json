@@ -2809,6 +2809,7 @@
       "content": {
         "entry": "SKILL.md",
         "references": [
+          "references/config.md",
           "references/lifecycle.md",
           "references/memory.md",
           "references/router.md",
@@ -2851,7 +2852,12 @@
         ],
         "blockers": []
       },
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-17",
+          "event": "refreshed from disk"
+        }
+      ]
     },
     "grill-me": {
       "version": "1.0.2",

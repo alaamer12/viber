@@ -16,6 +16,7 @@ Local index: [regime/index.md](regime/index.md)
 | `regime/supervision.md` | the umbrella — activation, participation, rerouting rule |
 | `regime/structure.md` | the canonical layout — root-files, code, `tools/`, `scripts/`, `artifacts/`, `scratch/`, `.viber/` |
 | `regime/memory.md` | the conversational ledger — `memory.md` / `settled.md` / `learnt.md` |
+| `regime/config.md` | the settings chain — defaults, layers, the config command family, the internal plugin surface |
 
 ## Commands — the v-commands
 
@@ -33,7 +34,7 @@ Local index: [diagrams/index.md](diagrams/index.md)
 
 | Path | Contents |
 |---|---|
-| `diagrams/` | renderable `.mmd` flow diagrams, one per doc (+ one legacy png) |
+| `diagrams/` | renderable `.mmd` flow diagrams, one per doc |
 
 **Standing instruction:** update this index in the same change whenever a document is added, removed or
 moved — a stale map rots the territory it describes.

@@ -22,7 +22,13 @@ class CensusUsageError(Exception):
 def resolve_census_path(census_opt: str | None) -> Path:
     if census_opt:
         return Path(census_opt)
-    return Path.cwd() / DEFAULT_DATA_DIR / CENSUS_NAME
+    per_project = Path.cwd() / DEFAULT_DATA_DIR / CENSUS_NAME
+    if not per_project.is_file():
+        # the seed repo keeps its census at the root; fall back so it works in place
+        root_seed = Path.cwd() / CENSUS_NAME
+        if root_seed.is_file():
+            return root_seed
+    return per_project
 
 
 def load_census(path: Path) -> Census:

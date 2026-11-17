@@ -107,8 +107,8 @@ def test_json_filter_and_strip() -> None:
     assert "long_hint" not in stripped["fit"]["after"][0]
 
 
-def test_json_full_superset_of_legacy_entry_keys() -> None:
-    legacy_keys = {
+def test_json_full_profile_covers_entry_keys() -> None:
+    entry_keys = {
         "version",
         "type",
         "description",
@@ -122,7 +122,7 @@ def test_json_full_superset_of_legacy_entry_keys() -> None:
     }
     sel = resolve_selection("skill", Profile.FULL)
     data = filter_payload("skill", SKILL_PAYLOAD, sel)
-    assert legacy_keys <= set(data)
+    assert entry_keys <= set(data)
 
 
 def test_emit_stdout_and_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -161,3 +161,12 @@ def test_emit_json_ascii_safe(tmp_path: Path) -> None:
     raw = out.read_bytes()
     raw.decode("ascii")  # would raise if non-ascii leaked
     assert "\\u2192" in raw.decode("ascii")
+
+
+def test_registry_and_renderers_stay_in_lockstep() -> None:
+    """A REGISTRY command without a renderer surfaces as a KeyError exit 1 —
+    this guard makes that impossible to ship."""
+    from viber.output.fields import REGISTRY
+    from viber.output.render import RENDERERS
+
+    assert set(REGISTRY) <= set(RENDERERS)

@@ -20,7 +20,7 @@ from viber.cli.deps import (
 from viber.core import lint as lint_core
 from viber.core import mutations
 from viber.data.store import CensusUsageError
-from viber.models.domain import Finding, FormatKind, Profile, SetField, Severity, SkillType
+from viber.models.domain import Finding, SetField, Severity, SkillType
 from viber.output.emit import emit
 
 
@@ -38,12 +38,12 @@ def set_cmd(
     value: str,
     show: bool = typer.Option(False, "--show/--no-show", help="Echo the updated record"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -62,12 +62,12 @@ def log_cmd(
     skill: str,
     event: str,
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -84,12 +84,12 @@ def add_skill_cmd(
     stype: SkillType = typer.Option(SkillType.NORMAL, "--type", "-t"),
     use_case: list[str] = typer.Option([], "--use-case", "-u", help="Repeatable"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -111,12 +111,12 @@ def remove_skill_cmd(
     name: str,
     dry_run: bool = typer.Option(False, "--dry-run"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -132,12 +132,12 @@ def refresh_cmd(
         None, "--check/--no-check", help="Report drift without writing"
     ),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
@@ -169,12 +169,12 @@ def lint_cmd(
     only: Severity | None = typer.Option(None, "--only", help="error|warning|question"),
     ask_only: bool = typer.Option(False, "--ask-only"),
     census: CensusOpt = None,
-    fmt: FormatOpt = FormatKind.TXT,
+    fmt: FormatOpt = None,
     out: OutOpt = None,
-    force: ForceOpt = False,
-    profile: ProfileOpt = Profile.STANDARD,
-    include: IncludeOpt = "",
-    exclude: ExcludeOpt = "",
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
 ) -> int:
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
