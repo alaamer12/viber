@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vinit on a fresh project — the imagination, drawn in Pele</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    max-width: 980px; margin: 0 auto; padding: 2rem 1.2rem 4rem;
+    background: #fffdf8; color: #241f16; line-height: 1.55;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: .2rem; }
+  .sub { color: #6f6e69; margin-top: 0; }
+  .pele {
+    --pele-bg: #fffdf8; --pele-fg: #241f16; --pele-muted: #6f6e69;
+    --pele-line: #7a6a45; --pele-font: "Segoe UI", sans-serif; --pele-radius: 8px;
+    border: 1px solid #e4ddc9; border-radius: 12px; padding: 1rem;
+    background: #fffdf8; overflow-x: auto;
+  }
+  pre.mermaid { display: none; }
+  ol.story { padding-left: 1.3rem; }
+  ol.story li { margin: .45rem 0; }
+  code { background: #f2efe4; padding: .08rem .3rem; border-radius: 4px; font-size: .88em; }
+  .tag { font-weight: 600; }
+  .run { color: #2c7a4b; } .ask { color: #b06a00; } .state { color: #2b5fa3; } .step { color: #8a7a52; }
+  footer { margin-top: 2.5rem; font-size: .85rem; color: #6f6e69; }
+  footer a { color: #205ea6; }
+</style>
+</head>
+<body>
+
+<h1>A user runs <code>/viber init</code> on a fresh project</h1>
+<p class="sub">One imagined session, drawn from the vinit spec — registry, memory, umbrella, census, first step.
+Legend: <span class="tag run">green = the actor's moves</span> · <span class="tag ask">amber = the agent asks</span> ·
+<span class="tag state">blue = files that come to exist</span> · <span class="tag step">sand = work done in between</span></p>
+
+<div id="diagram" class="pele"></div>
+
+<h2>The narration</h2>
+<ol class="story">
+  <li><b>Enter.</b> The user types <code>/viber init</code> in a repo that has nothing Viber in it. <span class="tag run">run</span></li>
+  <li><b>Who am I serving?</b> First run asks <code>&lt;USERNAME&gt;</code> and stores it in the registry header. <span class="tag ask">ask</span></li>
+  <li><b>Scan the deck.</b> Every registered Skill is read — metadata only, the top of each <code>SKILL.md</code> — global folders, the project, plus any extension repos the user names. Nothing is copied; the registry is an index. <span class="tag step">step</span></li>
+  <li><b>Classify.</b> Each Skill becomes Viber or Deck, gets a scope, an area (design · code · research…), its <code>viber:</code> tag, and any name conflicts are recorded, not resolved silently. <span class="tag step">step</span></li>
+  <li><b>Ask exclusions, state consequences.</b> "Which deck Skills stay out of the umbrella?" — every exclusion ships with its price written next to it; the tag declares, the deck decides. <span class="tag ask">ask</span></li>
+  <li><b>Files come to exist.</b> <span class="tag state">state</span>
+    <ul>
+      <li><code>.viber/registry.md</code> — this project's snapshot of the deck.</li>
+      <li><code>.viber/memory.md</code> · <code>settled.md</code> · <code>learnt.md</code> — the ledger, empty templates, capture-on-arrival from now on.</li>
+      <li><code>AGENTS.md</code> gains (or gets) its <code>## Viber</code> section — the declaration that turns supervision on for every later session.</li>
+      <li><code>.viber/.data/viber.json</code> — the per-project census, seeded from the master and filled while studying the deck: <code>serves</code>, <code>doing</code>, <code>why</code> per skill.</li>
+    </ul></li>
+  <li><b>Layout duties.</b> <code>.gitignore</code> carries <code>artifacts/</code> and <code>scratch/</code>; the <code>.viber</code> share-or-ignore question is asked once and the answer recorded. <span class="tag ask">ask</span></li>
+  <li><b>Never assume completion.</b> Existing docs or code are surveyed and marked <i>Needs Review</i> — a file existing is not proof its skill ran. <span class="tag step">step</span></li>
+  <li><b>Start.</b> Fresh repo → Phase 1, first mandatory step: <code>idea-md</code>. From here the Router drives: every session reads the declaration, reroutes relocatable knowledge under <code>.viber/</code>, and answers <code>POSSIBLE NEXT STEPS</code> with <code>last: → why → do:</code> from the census. <span class="tag run">run</span></li>
+</ol>
+
+<pre class="mermaid" id="source">
+flowchart TD
+    RUN([/viber init]):::run
+    WHO[USERNAME asked]:::ask
+    SCAN[Deck scanned · metadata only]:::step
+    CLASS[Classified · Viber or Deck]:::step
+    EXC[Exclusions asked · consequence stated]:::ask
+    REG[registry.md]:::state
+    MEM[Memory files]:::state
+    GIT[gitignore duties]:::ask
+    AG[AGENTS.md · Viber section]:::state
+    CEN[census · serves doing why]:::state
+    SURVEY[Outputs surveyed · Needs Review]:::step
+    START([First step · idea-md]):::run
+
+    RUN --> WHO --> SCAN --> CLASS --> EXC --> REG
+    REG --> MEM --> GIT --> AG --> CEN --> SURVEY --> START
+
+    subgraph AFTER[Every later session]
+        direction TB
+        READ[AGENTS.md read]:::step
+        UMB[Umbrella · .viber knowledge]:::state
+        ROUTE([Router guides · census + memory]):::run
+        READ --> UMB --> ROUTE
+    end
+    START --> READ
+
+    subgraph LEGEND [Legend]
+        direction LR
+        L1([run]):::run ~~~ L2([ask]):::ask ~~~ L3([state]):::state ~~~ L4([step]):::step
+    end
+
+    classDef run fill:#c7f0d8,stroke:#2c7a4b,color:#143a24
+    classDef ask fill:#fde8c8,stroke:#b06a00,color:#4a2d00
+    classDef state fill:#d8e8fb,stroke:#2b5fa3,color:#12294a
+    classDef step fill:#efeade,stroke:#8a7a52,color:#3d3520
+</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/pele@1.6.0/dist/pele.global.js"></script>
+<script>
+  const el = document.getElementById('source');
+  // trim leading/trailing blank lines the HTML indent introduces
+  pele.mount(document.getElementById('diagram'), el.textContent.replace(/^\s*\n|\n\s*$/g, ''));
+</script>
+<footer>
+  Source of truth: <code>docs/diagrams/vinit-fresh.mmd</code> · rendered by
+  <a href="https://pele.run">Pele</a> (<a href="https://github.com/obsidianmd/pele">obsidianmd/pele</a>, MIT) —
+  Mermaid syntax, no DOM, themed by CSS variables.
+</footer>
+
+</body>
+</html>

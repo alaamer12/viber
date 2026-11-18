@@ -13,5 +13,9 @@ render existence only.
 | `compact-flow.mmd` | `../commands/compact.md` |
 | `flow-flow.mmd` | `../commands/flow.md` |
 | `router-fit.mmd` | `../regime/router.md` (section 13) |
+| `vinit-fresh.mmd` | the imagined `/viber init` run on a fresh project — peer page `vinit-fresh.html` renders it with Pele |
 
 Update this table in the same change that adds, removes or renames a diagram.
+
+To draw any `.mmd` here as a themed SVG (no browser, no install — Pele fetched from the CDN):
+`bun tools/pele-render/render.mjs --all` → `artifacts/pele/`.

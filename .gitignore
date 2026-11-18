@@ -6,3 +6,8 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+# canonical layout: generated output and agent scratch are fully ignored
+artifacts/
+scratch/
+node_modules/
+.pele.cache.js

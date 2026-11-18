@@ -1,0 +1,9 @@
+{
+  "name": "viber-pele-render",
+  "private": true,
+  "type": "module",
+  "description": "Renders the project's .mmd diagram sources to SVG with Pele, imported from the CDN — no install.",
+  "scripts": {
+    "render": "bun render.mjs --all"
+  }
+}

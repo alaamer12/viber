@@ -1,0 +1,38 @@
+---
+title: "vinit on a fresh project"
+---
+flowchart TD
+    RUN([/viber init]):::run
+    WHO[USERNAME asked]:::ask
+    SCAN[Deck scanned · metadata only]:::step
+    CLASS[Classified · Viber or Deck]:::step
+    EXC[Exclusions asked · consequence stated]:::ask
+    REG[registry.md]:::state
+    MEM[Memory files]:::state
+    GIT[gitignore duties]:::ask
+    AG[AGENTS.md · Viber section]:::state
+    CEN[census · serves doing why]:::state
+    SURVEY[Outputs surveyed · Needs Review]:::step
+    START([First step · idea-md]):::run
+
+    RUN --> WHO --> SCAN --> CLASS --> EXC --> REG
+    REG --> MEM --> GIT --> AG --> CEN --> SURVEY --> START
+
+    subgraph AFTER[Every later session]
+        direction TB
+        READ[AGENTS.md read]:::step
+        UMB[Umbrella · .viber knowledge]:::state
+        ROUTE([Router guides · census + memory]):::run
+        READ --> UMB --> ROUTE
+    end
+    START --> READ
+
+    subgraph LEGEND [Legend]
+        direction LR
+        L1([run]):::run ~~~ L2([ask]):::ask ~~~ L3([state]):::state ~~~ L4([step]):::step
+    end
+
+    classDef run fill:#c7f0d8,stroke:#2c7a4b,color:#143a24
+    classDef ask fill:#fde8c8,stroke:#b06a00,color:#4a2d00
+    classDef state fill:#d8e8fb,stroke:#2b5fa3,color:#12294a
+    classDef step fill:#efeade,stroke:#8a7a52,color:#3d3520
