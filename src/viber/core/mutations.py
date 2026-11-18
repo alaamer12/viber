@@ -6,7 +6,7 @@ from typing import Any
 from viber.core.census_ops import entry_of, rels
 from viber.data.frontmatter import list_content, parse_frontmatter
 from viber.data.store import CensusUsageError, save_census
-from viber.models.domain import SetField, SkillType
+from viber.models.domain import Phase, SetField, SkillType
 from viber.models.schema import Census, Content, SkillEntry
 
 
@@ -37,10 +37,12 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
     if target == ".":
         if field is not SetField.PHASE:
             raise CensusUsageError("project-level set only supports 'phase'")
-        if value not in {"DR", "IP", "PP"}:
-            raise CensusUsageError("phase must be one of DR|IP|PP")
+        try:
+            parsed_phase = Phase(value)
+        except ValueError:
+            raise CensusUsageError(f"phase must be one of DR|IP|PP, got {value!r}") from None
         old = census.projectPhase
-        census.projectPhase = value
+        census.projectPhase = parsed_phase
         census.history.append({"date": today(), "event": f"phase transition {old}->{value}"})
         save_census(census_path, census)
         return f"projectPhase: {old} -> {value}"
@@ -55,15 +57,27 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
             raise CensusUsageError("blockers must be a JSON array")
         entry.fit.blockers = [str(v) for v in parsed]
     elif field is SetField.PHASE:
-        if value not in {"DR", "IP", "PP", "null"}:
-            raise CensusUsageError("phase must be one of DR|IP|PP|null")  # stored as extra key
+        if value == "null":
+            parsed_value: str | None = None
+        else:
+            try:
+                parsed_value = Phase(value).value
+            except ValueError:
+                raise CensusUsageError(
+                    f"phase must be one of DR|IP|PP|null, got {value!r}"
+                ) from None
         extras = entry.fit.__pydantic_extra__
         if extras is None:
             extras = {}
             entry.fit.__pydantic_extra__ = extras
-        extras["phase"] = None if value == "null" else value
+        extras["phase"] = parsed_value
     elif field is SetField.TYPE:
-        entry.type = SkillType(value).value
+        try:
+            entry.type = SkillType(value)
+        except ValueError:
+            raise CensusUsageError(
+                f"type must be one of {', '.join(t.value for t in SkillType)}"
+            ) from None
     elif field is SetField.USE_CASES:
         import json
 

@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from viber.models.domain import Phase
+from viber.models.domain import Mutability, Phase, SkillType
 
 
 class _Model(BaseModel):
@@ -49,7 +49,7 @@ class Content(_Model):
 
 class SkillEntry(_Model):
     version: str | None = None
-    type: str = "normal"
+    type: SkillType = SkillType.NORMAL
     description: str | None = None
     use_cases: list[str] = []
     deck: str | None = None
@@ -63,7 +63,7 @@ class SkillEntry(_Model):
 class Deck(_Model):
     name: str = ""
     description: str = ""
-    mutability: str = "open"
+    mutability: Mutability = Mutability.OPEN
     registry: str = ""
     remote: str | None = None
     skills: list[str] = Field(default_factory=list)
@@ -71,7 +71,7 @@ class Deck(_Model):
 
 class Step(_Model):
     step: str
-    phase: str | None = None
+    phase: Phase | None = None
     goal: str = ""
     needs: list[str] = Field(default_factory=list)
     possible_skills: list[str] = Field(default_factory=list)
@@ -83,7 +83,7 @@ class Census(_Model):
     version: str = ""
     created: str = ""
     createdBy: str = ""
-    projectPhase: str = Phase.DRAFT.value
+    projectPhase: Phase = Phase.DRAFT
     decks: dict[str, Deck] = Field(default_factory=dict)
     lifecycle: list[Step] = Field(default_factory=list)
     skills: dict[str, SkillEntry] = Field(default_factory=dict)

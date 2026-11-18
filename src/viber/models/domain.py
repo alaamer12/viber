@@ -15,6 +15,11 @@ class Phase(StrEnum):
     POST_PRODUCTION = "PP"
 
 
+class Mutability(StrEnum):
+    OPEN = "open"
+    CLOSED = "closed"
+
+
 class SkillType(StrEnum):
     BATTERY = "battery"
     META = "meta"

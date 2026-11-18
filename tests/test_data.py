@@ -104,3 +104,27 @@ def test_frontmatter_bom_tolerated(tmp_path: Path) -> None:
     md = tmp_path / "SKILL.md"
     md.write_bytes("\ufeff---\nname: x\ndescription: y\nversion: '1.0.0'\n---\n".encode("utf-8"))
     assert parse_frontmatter(md)["version"] == "1.0.0"
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "needle"),
+    [
+        (["projectPhase"], "ZZ", "projectPhase"),
+        (["skills", "idea-md", "type"], "totally-bogus", "type"),
+        (["lifecycle", 0, "phase"], "QQ", "phase"),
+        (["decks", "author", "mutability"], "sometimes", "mutability"),
+    ],
+)
+def test_closed_sets_hard_fail_on_load(
+    tmp_path: Path, mini: dict, path: list, value: str, needle: str
+) -> None:
+    """No bogus enum ever flows inward: load is the boundary and it refuses."""
+    node = mini
+    for key in path[:-1]:
+        node = node[key]
+    node[path[-1]] = value
+    p = tmp_path / "viber.json"
+    p.write_text(json.dumps(mini), encoding="utf-8")
+    with pytest.raises(CensusError) as exc:
+        load_census(p)
+    assert needle in str(exc.value)
