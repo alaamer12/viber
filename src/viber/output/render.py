@@ -58,7 +58,7 @@ def render_skill(p: dict[str, Any], sel: list[str]) -> str:
         lines += ["", "use-cases"] + [f"- {u}" for u in p["use_cases"]]
     fit = p.get("fit") or {}
     if _selected(sel, "fit"):
-        for k in ("role", "when", "serves", "produces", "consumes", "blockers"):
+        for k in ("role", "when", "doing", "why", "serves", "produces", "consumes", "blockers"):
             if fit.get(k):
                 val = ", ".join(fit[k]) if isinstance(fit[k], list) else str(fit[k])
                 lines.append(f"fit.{k}: {val}")
@@ -102,29 +102,53 @@ def render_step(p: dict[str, Any], sel: list[str]) -> str:
 
 
 def render_next(p: dict[str, Any], sel: list[str]) -> str:
-    lines: list[str] = []
-    long_hints = _selected(sel, "long_hints")
+    header = "POSSIBLE NEXT STEPS"
+    if _selected(sel, "step") and p.get("step"):
+        header += f" (step: {p['step']})"
+    lines: list[str] = [header, ""]
+    if _selected(sel, "previous"):
+        prev = p.get("previous")
+        if prev:
+            step_note = f" (step {prev['step']})" if prev.get("step") else ""
+            lines.append(f"last: {prev['skill']} — {prev['outcome']} at {prev['ts']}{step_note}")
+        else:
+            lines.append("last: (no previous step recorded)")
+        lines.append("")
     show_reasons = _selected(sel, "reasons")
     show_suggestion = _selected(sel, "suggestion")
-    for c in p.get("candidates", []):
-        lines.append(
-            f"next: {c['skill']}" + (f" (step {p.get('step')})" if _selected(sel, "step") else "")
-        )
+    candidates = p.get("candidates", [])
+    if candidates:
+        for i, c in enumerate(candidates, start=1):
+            head = f"next: {c['skill']} ({i} of {len(candidates)} unblocked)"
+            if _selected(sel, "step"):
+                head += f" — step {p.get('step')}"
+            lines.append(head)
+            lines.append("")
+            if show_reasons:
+                lines.append("why this might be next:")
+                longs = c.get("reason_long", [])
+                for j, reason in enumerate(c.get("reasons", [])):
+                    lines.append(f"  - {reason}")
+                    if j < len(longs) and longs[j]:
+                        lines.append(f"      {longs[j]}")
+            if c.get("why"):
+                lines.append(f"why it exists here: {c['why']}")
+            if c.get("todo"):
+                lines.append(f"do: {c['todo']}")
+            if show_suggestion and c.get("suggestion"):
+                lines.append(f"suggestion: {c['suggestion']}")
+            lines.append(f"consumes: {', '.join(c.get('consumes', [])) or '-'}")
+            lines.append("")
+    else:
+        lines.append("(no unblocked skill — what this step needs does not wait for one)")
+        if _selected(sel, "needs") and p.get("needs"):
+            lines += ["", "needs still open:"] + [f"- {n}" for n in p["needs"]]
+        if _selected(sel, "commands") and p.get("commands"):
+            lines += ["", "viber commands callable now: " + ", ".join(p["commands"])]
         lines.append("")
-        if show_reasons:
-            for reason in c.get("reasons", []):
-                lines.append(f"- {reason}")
-            if long_hints and c.get("reason_long"):
-                for rl in c["reason_long"]:
-                    lines.append(f"    {rl}")
-        lines.append(f"when: {c.get('when') or '-'}")
-        if show_suggestion and c.get("suggestion"):
-            lines.append(f"suggestion: {c['suggestion']}")
-        lines.append(f"produces: {', '.join(c.get('produces', [])) or '-'}")
-        lines.append(f"consumes: {', '.join(c.get('consumes', [])) or '-'}")
     if _selected(sel, "blocked") and p.get("blocked"):
-        lines += ["", "blocked:"] + [f"- {b['skill']}: {b['blockers']}" for b in p["blocked"]]
-    return "\n".join(lines)
+        lines += ["blocked:"] + [f"- {b['skill']}: {b['blockers']}" for b in p["blocked"]]
+    return "\n".join(lines).rstrip("\n")
 
 
 def render_deck(p: dict[str, Any], sel: list[str]) -> str:
@@ -165,6 +189,12 @@ def render_situation(p: dict[str, Any], sel: list[str]) -> str:
         if _selected(sel, "unclassified"):
             bits.append(f"unclassified: {p.get('unclassified', 0)}")
         lines.append(" · ".join(bits))
+    if _selected(sel, "previous"):
+        prev = p.get("previous")
+        if prev:
+            lines.append(f"last: {prev['skill']} — {prev['outcome']} at {prev['ts']}")
+        else:
+            lines.append("last: (no previous step recorded)")
     if _selected(sel, "roster") and p.get("roster"):
         rows = [[r["name"], r["version"], r["status"]] for r in p["roster"]]
         lines += ["", "step roster"] + _table(rows, ["Skill", "Version", "Status"])
@@ -189,12 +219,22 @@ def render_situation(p: dict[str, Any], sel: list[str]) -> str:
             lines += _table(rows, ["Skill", "Uses", "Last Used", "OK", "Fail"])
     if _selected(sel, "next"):
         nxt = p.get("next")
-        lines += ["", "next"]
+        lines += ["", "POSSIBLE NEXT STEP"]
         if nxt is None:
-            lines.append("(nothing unblocked)")
+            lines.append("(no unblocked skill — this step's needs stand on their own)")
+            if _selected(sel, "needs") and p.get("needs"):
+                lines += [f"- {n}" for n in p["needs"]]
         else:
-            lines.append(f"{nxt['skill']} — {nxt.get('when') or '-'}")
-            lines += [f"- {r}" for r in nxt.get("reasons", [])]
+            lines.append(f"next: {nxt['skill']}")
+            longs = nxt.get("reason_long", [])
+            for j, r in enumerate(nxt.get("reasons", [])):
+                lines.append(f"  - {r}")
+                if j < len(longs) and longs[j]:
+                    lines.append(f"      {longs[j]}")
+            if nxt.get("why"):
+                lines.append(f"why it exists here: {nxt['why']}")
+            if nxt.get("todo"):
+                lines.append(f"do: {nxt['todo']}")
     if _selected(sel, "open"):
         open_items = p.get("open") or []
         lines += ["", "open decisions"]

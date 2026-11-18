@@ -67,36 +67,62 @@ def uninstalled_candidates(census: Census, step_name: StepName) -> list[SkillNam
 
 
 def _reasons(
-    census: Census, name: SkillName, long: bool
-) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    census: Census, name: SkillName
+) -> tuple[list[str], list[str]]:
+    """Paired lists: short[i] and its long detail long[i] ("" when the edge has none)."""
     short: list[str] = []
     detail: list[str] = []
     entry = census.skills[name]
     if not entry.fit.after:
         step_name = entry.fit.serves[0] if entry.fit.serves else "-"
         short.append(f"first in {step_name} — no recorded predecessors")
-        return tuple(short), tuple(detail)
+        detail.append("")
+        return short, detail
     for rel in entry.fit.after:
         if rel.skill not in census.skills:
             short.append(f"references predecessor '{rel.skill}' not in census (see lint)")
+            detail.append("")
             continue
         if blockers_of(census, rel.skill):
             short.append(f"waits on {rel.skill} (blocked)")
+            detail.append("")
         elif rel.hint:
             short.append(f"follows {rel.skill}: {rel.hint}")
-            if long and rel.long_hint:
-                detail.append(f"{rel.skill}: {rel.long_hint}")
+            detail.append(f"{rel.skill}: {rel.long_hint}" if rel.long_hint else "")
         else:
             short.append(f"follows {rel.skill}")
-    return tuple(short), tuple(detail)
+            detail.append("")
+    return short, detail
+
+
+def _todo(when: str, produces: list[str], description: str | None, doing: str = "") -> str:
+    """The concrete "what doing this means" line — the authored `doing` when the
+    census carries one, else composed from what the census already knows."""
+    if doing:
+        return doing
+    if produces:
+        return f"{when} → produces: {', '.join(produces)}" if when else \
+            f"produce: {', '.join(produces)}"
+    return when or (description or "").split(".")[0]
 
 
 def next_candidates(
-    census: Census, db: TelemetryDB | None, count: int = 1, long: bool = False
+    census: Census, db: TelemetryDB | None, count: int = 1
 ) -> dict[str, Any]:
     step_name = current_step(census)
+    previous: dict[str, Any] | None = None
+    if db is not None and db.exists():
+        previous = db.last_done()
     if step_name is None:
-        return {"step": None, "candidates": [], "blocked": []}
+        return {
+            "step": None,
+            "candidates": [],
+            "blocked": [],
+            "needs": [],
+            "commands": [],
+            "previous": previous,
+        }
+    step_obj = next(s for s in census.lifecycle if s.step == step_name)
     blocked: list[dict[str, Any]] = []
     candidates: list[dict[str, Any]] = []
     for name in step_roster(census, step_name):
@@ -105,7 +131,7 @@ def next_candidates(
         if blockers:
             blocked.append({"skill": name, "blockers": ", ".join(blockers)})
             continue
-        reasons, reason_long = _reasons(census, name, long)
+        reasons, reason_long = _reasons(census, name)
         suggestion = ""
         if db is not None and db.exists():
             succ = db.successor(name)
@@ -115,6 +141,11 @@ def next_candidates(
             {
                 "skill": name,
                 "when": entry.fit.when,
+                "doing": entry.fit.doing,
+                "why": entry.fit.why,
+                "todo": _todo(
+                    entry.fit.when, list(entry.fit.produces), entry.description, entry.fit.doing
+                ),
                 "reasons": list(reasons),
                 "reason_long": list(reason_long),
                 "consumes": list(entry.fit.consumes),
@@ -124,7 +155,14 @@ def next_candidates(
         )
         if len(candidates) >= count:
             break
-    return {"step": step_name, "candidates": candidates, "blocked": blocked}
+    return {
+        "step": step_name,
+        "candidates": candidates,
+        "blocked": blocked,
+        "needs": list(step_obj.needs),
+        "commands": list(step_obj.commands),
+        "previous": previous,
+    }
 
 
 def status_payload(census: Census) -> dict[str, Any]:

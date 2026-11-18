@@ -47,6 +47,8 @@ class SetField(StrEnum):
     USE_CASES = "use_cases"
     DECK = "deck"
     PATH = "path"
+    DOING = "doing"
+    WHY = "why"
 
 
 class Outcome(StrEnum):

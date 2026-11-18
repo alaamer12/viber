@@ -198,6 +198,13 @@ def test_patterns_no_data_message(app: Any, census_file: Path) -> None:
     assert "no telemetry" in r.output
 
 
+def test_next_shows_possible_steps_with_do(app: Any, census_file: Path) -> None:
+    r = invoke(app, ["next", "-n", "2"] + census_arg(census_file))
+    assert r.exit_code == 0
+    assert "POSSIBLE NEXT STEPS" in r.output
+    assert "do:" in r.output
+
+
 def test_situation_one_call(app: Any, census_file: Path) -> None:
     r = invoke(app, ["situation"] + census_arg(census_file))
     assert r.exit_code == 0

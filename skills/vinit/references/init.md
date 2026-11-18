@@ -132,6 +132,19 @@ memory files are regenerable runtime data. Ask the user once: ignore (default) o
 clones and machines). Record the answer in the registry header. On re-run, honor the recorded choice — never
 re-ask unless the user brings it up.
 
+### 2.9 The Per-Project Census
+
+Write the project's census at `.viber/.data/viber.json`, seeded from the master seed and written **only
+through the `viber` CLI**. While studying the deck, fill for every skill:
+
+- `viber set <skill> serves`-equivalent step bindings (which steps it serves in THIS project).
+- `viber set <skill> doing "<what exactly this skill must do in this project, concretely>"`.
+- `viber set <skill> why "<why it may be the next step here>"`.
+
+Do not leave `doing`/`why` empty for any skill that serves a step — `viber next` and `viber situation` print
+them as `do:` and `why it exists here`; empty means the router answers "what next?" with a name instead of
+a task. Author each relation edge's `long_hint` once, from its use-case.
+
 ---
 
 ## 3. Step 2 — Mention It in `AGENTS.md`

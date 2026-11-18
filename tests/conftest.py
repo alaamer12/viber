@@ -86,6 +86,8 @@ MINI: dict[str, Any] = {
             "fit": {
                 "role": "first doc",
                 "when": "no IDEA.md yet",
+                "doing": "",
+                "why": "",
                 "serves": ["Idea & Understanding"],
                 "after": [],
                 "before": [
@@ -114,6 +116,8 @@ MINI: dict[str, Any] = {
             "fit": {
                 "role": "awareness",
                 "when": "idea written",
+                "doing": "",
+                "why": "",
                 "serves": ["Idea & Understanding"],
                 "after": [
                     {
@@ -142,6 +146,8 @@ MINI: dict[str, Any] = {
             "fit": {
                 "role": "taxonomy",
                 "when": "idea exists",
+                "doing": "",
+                "why": "",
                 "serves": ["Idea & Understanding", "Implementation"],
                 "after": [
                     {
@@ -170,6 +176,8 @@ MINI: dict[str, Any] = {
             "fit": {
                 "role": "",
                 "when": "",
+                "doing": "",
+                "why": "",
                 "serves": [],
                 "after": [],
                 "before": [],
@@ -192,6 +200,8 @@ MINI: dict[str, Any] = {
             "fit": {
                 "role": "bootstrap",
                 "when": "no registry",
+                "doing": "",
+                "why": "",
                 "serves": [],
                 "after": [],
                 "before": [],

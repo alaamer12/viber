@@ -64,7 +64,11 @@ The Router should consider:
 - Outstanding decisions or blockers, read from the project's `.viber/memory.md`; surface a deferred question when its blocker clears.
 - Whether the user is intentionally working out of order.
 
-It should recommend the next logical action, not blindly select the next item in a list.
+It should recommend the next logical action, not blindly select the next item in a list. The census
+answers carry the reasoning: `viber next` names the previous step (`last:` — the newest closed telemetry
+invocation), then prints each candidate with *why this might be next* (edge hints), *why it exists here*
+(`fit.why`) and *do* (`fit.doing`); when no skill is unblocked it prints the step's needs and commands —
+guidance never goes empty while the step has work.
 
 ### 2.3. Suggest Relevant Skills
 

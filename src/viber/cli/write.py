@@ -36,7 +36,7 @@ def set_cmd(
     skill: str,
     field: SetField,
     value: str,
-    show: bool = typer.Option(False, "--show/--no-show", help="Echo the updated record"),
+    show: bool = typer.Option(False, "--show/--no-show", "-s", help="Echo the updated record"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -45,6 +45,7 @@ def set_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Write one census field: set <skill> <field> <json-value> ('.' = project fields)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     message = mutations.set_field(data, skill, field, value, g.census_path)
@@ -69,6 +70,7 @@ def log_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Append a dated event to a skill's history."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     _ack(g, mutations.log_event(data, skill, event, g.census_path))
@@ -91,6 +93,7 @@ def add_skill_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Register a new skill: deck, disk path, served steps, type, use-cases."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     steps = [s.strip() for s in serves.split(",") if s.strip()]
@@ -109,7 +112,7 @@ def add_skill_cmd(
 @command
 def remove_skill_cmd(
     name: str,
-    dry_run: bool = typer.Option(False, "--dry-run"),
+    dry_run: bool = typer.Option(False, "--dry-run", "-d"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -118,6 +121,7 @@ def remove_skill_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Drop a skill from the census (--dry-run previews the fallout)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     _ack(g, mutations.remove_skill(data, name, g.census_path, dry=dry_run))
@@ -129,7 +133,7 @@ def refresh_cmd(
     name: str | None = typer.Argument(None),
     everything: bool = typer.Option(False, "--all", "-a"),
     check: bool | None = typer.Option(
-        None, "--check/--no-check", help="Report drift without writing"
+        None, "--check/--no-check", "-c", help="Report drift without writing"
     ),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
@@ -139,6 +143,7 @@ def refresh_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Re-read a skill's frontmatter and content tree from disk (or --all)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     if not name and not everything:
@@ -167,7 +172,7 @@ def refresh_cmd(
 @command
 def lint_cmd(
     only: Severity | None = typer.Option(None, "--only", help="error|warning|question"),
-    ask_only: bool = typer.Option(False, "--ask-only"),
+    ask_only: bool = typer.Option(False, "--ask-only", "-a"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -176,6 +181,7 @@ def lint_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Audit the census; deck conflicts surface as ASK USER decisions."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     findings = lint_core.run_lint(data, g.census_path)

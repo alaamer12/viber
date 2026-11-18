@@ -74,6 +74,17 @@ class TelemetryDB:
             result: int = row[0]
             return result
 
+    def last_done(self) -> dict[str, object] | None:
+        """The most recent closed invocation — the previous step taken."""
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT skill, ts, outcome, step FROM invocations"
+                " WHERE outcome IS NOT NULL ORDER BY id DESC LIMIT 1",
+            ).fetchone()
+        if row is None:
+            return None
+        return {"skill": row[0], "ts": row[1], "outcome": row[2], "step": row[3]}
+
     def skill_stats(self, skill: str) -> dict[str, object]:
         with self.connect() as conn:
             row = conn.execute(

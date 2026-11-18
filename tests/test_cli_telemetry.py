@@ -47,3 +47,17 @@ def test_outcome_without_open_fails(app: Any, census_file: Path) -> None:
 
 def test_use_unknown_skill(app: Any, census_file: Path) -> None:
     assert call(app, ["use", "ghost"], census_file).exit_code == 1
+
+
+def test_previous_step_surfaces_in_next_and_situation(app: Any, census_file: Path) -> None:
+    assert call(app, ["use", "steering"], census_file).exit_code == 0
+    assert call(app, ["outcome", "steering", "ok"], census_file).exit_code == 0
+    assert "last: steering" in call(app, ["next"], census_file).output
+    assert "last: steering" in call(app, ["situation"], census_file).output
+    j = json.loads(call(app, ["next", "-f", "json"], census_file).output)
+    assert j["previous"]["skill"] == "steering" and j["previous"]["outcome"] == "ok"
+
+
+def test_previous_absent_without_telemetry(app: Any, census_file: Path) -> None:
+    s = call(app, ["situation"], census_file)
+    assert "no previous step recorded" in s.output

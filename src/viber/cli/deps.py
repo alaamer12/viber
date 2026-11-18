@@ -30,13 +30,17 @@ FormatOpt = Annotated[
 ]
 OutOpt = Annotated[Path | None, typer.Option("--out", "-o", help="Flush output to file")]
 ForceOpt = Annotated[
-    bool | None, typer.Option("--force/--no-force", help="Overwrite --out target")
+    bool | None, typer.Option("--force/--no-force", "-F", help="Overwrite --out target")
 ]
 ProfileOpt = Annotated[
     Profile | None, typer.Option("--profile", "-P", help="Output profile [env VIBER_PROFILE]")
 ]
-IncludeOpt = Annotated[str | None, typer.Option("--include", help="Comma list of extra fields")]
-ExcludeOpt = Annotated[str | None, typer.Option("--exclude", help="Comma list of dropped fields")]
+IncludeOpt = Annotated[
+    str | None, typer.Option("--include", "-I", help="Comma list of extra fields")
+]
+ExcludeOpt = Annotated[
+    str | None, typer.Option("--exclude", "-E", help="Comma list of dropped fields")
+]
 
 
 class Globals:

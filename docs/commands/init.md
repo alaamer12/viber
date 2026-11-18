@@ -133,6 +133,20 @@ user, recommend the move (`../regime/supervision.md` 5.3).
 Ask the user once: ignore (default) or commit (shared ledger across clones). Record the answer in the registry
 header. On re-run, honor the recorded choice — never re-ask unless the user brings it up.
 
+### 2.9 The Per-Project Census
+
+`init` seeds the project's census at `.viber/.data/viber.json` from the master seed, through the `viber` CLI
+(it is the sole writer). As it studies the user's actual deck it fills, per project and per skill:
+
+- **`fit.serves`** — which steps this skill actually serves in this project.
+- **`fit.doing`** — what exactly this skill is expected to *do* here, in one or two concrete sentences.
+- **`fit.why`** — why this skill may be a next step here, in this project's terms.
+
+These two long fields are what `viber next` prints under `do:` and `why it exists here` — a census without
+them answers "what next?" with a name instead of a task. Relation edges carry their `long_hint` use-case the
+same way: authored once, read from both ends. A skill that serves a step must not enter the per-project
+census with empty `doing`/`why`.
+
 ---
 
 ## 3. Step 2 — Mention It in `AGENTS.md`

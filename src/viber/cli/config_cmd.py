@@ -77,6 +77,7 @@ def list_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Every settings key: value, source layer, default."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     st = _settings(g)
     rows = [
@@ -103,6 +104,7 @@ def get_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Effective value of one key and the layer it came from."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     st = _settings(g)
     payload = {
@@ -119,8 +121,8 @@ def get_cmd(
 def set_cmd(
     key: ConfigKey,
     value: str,
-    user: bool = typer.Option(False, "--user", help=_USER_HELP),
-    path: str | None = typer.Option(None, "--path", help=_PATH_HELP),
+    user: bool = typer.Option(False, "--user", "-u", help=_USER_HELP),
+    path: str | None = typer.Option(None, "--path", "-p", help=_PATH_HELP),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -129,6 +131,7 @@ def set_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Write one settings key to the project layer (or --user / --path)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     target = _target(user, path)
     coerced = _coerce(key, value)
@@ -140,8 +143,8 @@ def set_cmd(
 @command
 def unset_cmd(
     key: ConfigKey,
-    user: bool = typer.Option(False, "--user", help=_USER_HELP),
-    path: str | None = typer.Option(None, "--path", help=_PATH_HELP),
+    user: bool = typer.Option(False, "--user", "-u", help=_USER_HELP),
+    path: str | None = typer.Option(None, "--path", "-p", help=_PATH_HELP),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -150,6 +153,7 @@ def unset_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Remove a key from one layer; the ack names what takes over."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     target = _target(user, path)
     if not config_store.unset_value(target, key.value):
@@ -176,6 +180,7 @@ def path_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Show the config files and plugin dirs, with exists/absent marks."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     paths = config_store.locate(os.environ)
 

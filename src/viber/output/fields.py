@@ -46,6 +46,9 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
         _f("reasons", "decision", _ALL, ("candidates",)),
         _f("suggestion", "context", _STD_FULL, ("candidates",)),
         _f("blocked", "context", _STD_FULL),
+        _f("previous", "context", _STD_FULL),
+        _f("needs", "decision", _STD_FULL),
+        _f("commands", "decision", frozenset({Profile.FULL})),
         _f("long_hints", "detail", frozenset({Profile.FULL})),
     ),
     "deck": (
@@ -69,12 +72,14 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
     "situation": (
         _f("phase", "core", _ALL),
         _f("step", "core", _ALL),
+        _f("previous", "core", _STD_FULL),
         _f("total", "counts", _STD_FULL),
         _f("blocked", "counts", _STD_FULL),
         _f("unclassified", "counts", frozenset({Profile.FULL})),
         _f("roster", "state", _STD_FULL),
         _f("usage", "state", _STD_FULL),
         _f("next", "decision", _STD_FULL),
+        _f("needs", "decision", _STD_FULL),
         _f("open", "decision", _STD_FULL),
     ),
     "list": (

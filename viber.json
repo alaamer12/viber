@@ -226,6 +226,8 @@
       "fit": {
         "role": "Produces the idea document every later step references",
         "when": "Project has a raw concept but no written IDEA.md",
+        "doing": "Interview the owner until the raw concept is one honest page — problem, who has it, why now, what success looks like — then write idea.md as the reference everything else answers to.",
+        "why": "Nothing downstream can be reviewed while the concept lives only in chat; this is the first durable artifact of the project.",
         "serves": [
           "Idea & Understanding"
         ],
@@ -324,6 +326,8 @@
       "fit": {
         "role": "Competitive landscape and uniqueness verdict",
         "when": "Idea exists; need to know what already exists and what differentiates",
+        "doing": "Search engines, GitHub, stores and socials for products that already do this or part of it; write the landscape with links and state plainly what is genuinely different here.",
+        "why": "Cheaper to learn the field is crowded now than after a quarter of building.",
         "serves": [
           "Idea & Understanding"
         ],
@@ -400,6 +404,8 @@
       "fit": {
         "role": "Two-tier documentation taxonomy (perception + tech); appears in Idea and Foundation steps",
         "when": "Requirements exist but no structured documentation architecture",
+        "doing": "Turn requirements chatter into the two-tier steering taxonomy — perception docs (product, domain, capabilities, policy) and tech docs (stack, structure, function) — one concern per file.",
+        "why": "Decisions repeated per-feature are undocumented decisions; the taxonomy gives each one a findable home.",
         "serves": [
           "Idea & Understanding",
           "Project Foundation"
@@ -487,6 +493,8 @@
       "fit": {
         "role": "Writes the agent rulebook (AGENTS.md)",
         "when": "Project needs agent obligations, conventions, and how-to routing",
+        "doing": "Write AGENTS.md as obligations and pointers, not prose: standing rules per topic, references to design docs, honest gaps marked pending — not assumed.",
+        "why": "Every future agent session starts blind without it; it is the project contract with its workers.",
         "serves": [
           "Idea & Understanding"
         ],
@@ -606,6 +614,8 @@
       "fit": {
         "role": "Plans the complete page universe and route tree",
         "when": "Product concept settled; need screen inventory before prototyping",
+        "doing": "Inventory the product page universe — main, secondary, complementary — pruning the catalog against real needs, recording redirects and exclusions with reasons.",
+        "why": "The vision phase needs the complete screen map before any prototype claims to represent the product.",
         "serves": [
           "Vision"
         ],
@@ -670,6 +680,8 @@
       "fit": {
         "role": "Interactive design prototypes with URL-driven states",
         "when": "Page inventory exists; need to see the experience before building",
+        "doing": "Draft the visual first pass of the main pages, then refine until the prototype reflects the full page map — real content, real states, no filler.",
+        "why": "A picture collapses vague agreement; iterating a prototype is cheaper than iterating shipped UI.",
         "serves": [
           "Vision"
         ],
@@ -758,6 +770,8 @@
       "fit": {
         "role": "Transforms noisy UI into calm, readable interfaces",
         "when": "Existing UI or prototype needs visual cleanup",
+        "doing": "Walk the current design for crowded, noisy, overwhelming areas and reduce them at the chosen intensity, keeping one clear focal point per screen.",
+        "why": "Optional — but the moment a screen fights itself, this is what calms it.",
         "serves": [
           "Vision"
         ],
@@ -910,6 +924,8 @@
       "fit": {
         "role": "Audits UI against 67 design anti-patterns",
         "when": "UI exists and needs quality review before implementation",
+        "doing": "Audit the interface against the pattern catalog — generic gradients, card soup, icon spam — with visual evidence and prioritized fixes.",
+        "why": "Quality of intentionality is what separates a product from a template.",
         "serves": [
           "Vision"
         ],
@@ -1013,6 +1029,8 @@
       "fit": {
         "role": "Orchestrates the full technical architecture documentation suite",
         "when": "Stack settled; need binding specs for language, errors, UI, DB, plugins, cross-platform, a11y, display",
+        "doing": "Produce the architecture suite: context, constraints, component map, data flow, deployment — each decision recorded with its drivers and trade-offs.",
+        "why": "Foundation turns product shape into engineering shape; without the map every layer invents its own.",
         "serves": [
           "Project Foundation"
         ],
@@ -1128,6 +1146,8 @@
       "fit": {
         "role": "Documents layer ownership as micro-decision contract files",
         "when": "Architecture exists; responsibilities need explicit ownership",
+        "doing": "Write tiny one-responsibility contract files naming the owning layer per cross-layer promise (OoU/AoU), with the reason recorded.",
+        "why": "Integration ambiguity is where layers argue later; contracts settle it while it is still cheap.",
         "serves": [
           "Project Foundation"
         ],
@@ -1204,6 +1224,8 @@
       "fit": {
         "role": "Role-based UI construction architecture (Page/View/Component)",
         "when": "UI specs exist; need component hierarchy before coding",
+        "doing": "Fix the Page-View-Component hierarchy: what each level may know, own and render, and where decoration and alignment live.",
+        "why": "Component chaos is structural before it is visual; this decides the skeleton the UI hangs on.",
         "serves": [
           "Project Foundation"
         ],
@@ -1271,6 +1293,8 @@
       "fit": {
         "role": "Classifies facts as State/Condition, decides ownership",
         "when": "UI roles decided; need fact-source ownership before coding",
+        "doing": "Classify every piece of state the app consults as owned State or external Condition, assign owners, settle read-vs-create per consumer.",
+        "why": "Whether a fact is yours or the world's must be answered once, not re-guessed per screen.",
         "serves": [
           "Project Foundation"
         ],
@@ -1343,6 +1367,8 @@
       "fit": {
         "role": "Styling system: build (new) or retrofit (existing). Absorbs former styleup skill.",
         "when": "Need token-driven styling architecture or existing mess to centralize",
+        "doing": "Establish the styling system — structure, layer chain, tokens, naming — or retrofit hard-coded styles with before/after parity evidence.",
+        "why": "Visual consistency is either a system or luck; this decides which.",
         "serves": [
           "Project Foundation"
         ],
@@ -1422,6 +1448,8 @@
       "fit": {
         "role": "Type-system hardening: brands, boundary checks, compiler-first rejection. Formerly type-up.",
         "when": "Need to tighten types, eliminate stringly-typed code, validate contracts",
+        "doing": "Set the type conventions: brands over raw primitives, creation points, boundary checks that turn untrusted input into typed values.",
+        "why": "Types are the cheapest invariant enforcement; retrofitting brands later costs an order of magnitude more.",
         "serves": [
           "Project Foundation",
           "Implementation"
@@ -1500,6 +1528,8 @@
       "fit": {
         "role": "Investigates and documents engineering anti-patterns to avoid",
         "when": "Code or architecture exists; need project-specific anti-pattern rules",
+        "doing": "Research this stack's real failure modes and write ANTIPATTERN.md with evidence from the code, so agents stop repeating known wounds.",
+        "why": "Every project gravitates toward specific mistakes; making them explicit once saves them forever.",
         "serves": [
           "Project Foundation"
         ],
@@ -1559,6 +1589,8 @@
       "fit": {
         "role": "Creates professional README grounded in actual project state",
         "when": "Project has enough substance to introduce itself",
+        "doing": "Write the README from what actually exists: real entry points, verified commands, honest status — never promised features.",
+        "why": "The repo front door; agents and humans both mis-steer on a lying README.",
         "serves": [
           "Project Foundation"
         ],
@@ -1619,6 +1651,8 @@
       "fit": {
         "role": "Declares goals, priorities, and trade-offs",
         "when": "Competing goals need explicit prioritization",
+        "doing": "Record the declared goals, priorities and their prices: which trade-offs were accepted, which goals conflict, what was given up.",
+        "why": "You cannot get the gold in every case; commitments stop re-litigating what was already paid for.",
         "serves": [
           "Project Foundation"
         ],
@@ -1676,6 +1710,8 @@
       "fit": {
         "role": "Maintains unambiguous project vocabulary",
         "when": "Project terms carry more than dictionary sense",
+        "doing": "Capture the project vocabulary in letter blocks — only words that carry more here than in the dictionary, with concrete definitions.",
+        "why": "One ambiguous term forks every later doc; the golden rule says what earns a block.",
         "serves": [
           "Project Foundation"
         ],
@@ -1728,6 +1764,8 @@
       "fit": {
         "role": "Architectural inventory of functional building blocks",
         "when": "Application confirmed; need component ownership map",
+        "doing": "Inventory the subsystems: each block's purpose, responsibilities in and out, inputs, outputs and integrations.",
+        "why": "Implementation needs the machine's parts list before it starts wiring.",
         "serves": [
           "Project Foundation"
         ],
@@ -1792,6 +1830,8 @@
       "fit": {
         "role": "Index of reusable units so agents extend instead of duplicating",
         "when": "Code exists; need reuse catalog before fan-out",
+        "doing": "Index the reusable units — path, responsibility, dependencies — so implementers extend what exists instead of building parallel ones.",
+        "why": "The difference between a codebase and a pile is whether the second copy was preventable.",
         "serves": [
           "Project Foundation"
         ],
@@ -1849,6 +1889,8 @@
       "fit": {
         "role": "Dependency redundancy audit and freshness update",
         "when": "Dependencies accumulated; need cleanup or modernization",
+        "doing": "Audit dependencies for redundancy, stubs and undeclared runtime needs; recommend with when-not and alternatives.",
+        "why": "Every wrong dependency compounds through the build; checked once it stays cheap.",
         "serves": [
           "Project Foundation"
         ],
@@ -1896,6 +1938,8 @@
       "fit": {
         "role": "Updates global AGENTS.md with settled user preferences",
         "when": "User states a lasting preference that should never be re-asked",
+        "doing": "Distill standing preferences into the global AGENTS.md so settled questions are never re-asked across projects.",
+        "why": "Optional — only when the same question genuinely keeps returning.",
         "serves": [
           "Project Foundation"
         ],
@@ -1940,6 +1984,8 @@
       "fit": {
         "role": "Mandatory pre-coding protocol: brief, root inspection, doc grounding",
         "when": "About to write or modify code in any stack",
+        "doing": "Run the pre-coding gates, then build the planned work: interfaces and states first, real behavior, no half-finished features.",
+        "why": "The Implementation phase core verb; a plan without this stays a document.",
         "serves": [
           "Implementation"
         ],
@@ -2083,6 +2129,8 @@
       "fit": {
         "role": "Root-cause debugging loop: hypothesis, experiment, narrow",
         "when": "Any bug, error, crash, regression, or wrong data",
+        "doing": "Reproduce it, read the actual error at the real boundary, find the root cause before touching code.",
+        "why": "When behavior deviates from intent, guessing edits only move the bug around.",
         "serves": [
           "Implementation"
         ],
@@ -2155,6 +2203,8 @@
       "fit": {
         "role": "Applies root-cause fix and generalizes to prevent recurrence",
         "when": "dbug has identified the root cause",
+        "doing": "Apply the root-cause fix and improve the surrounding code so the same class of bug gets easier to catch next time.",
+        "why": "A patch hides; a fix plus a better detector removes the category.",
         "serves": [
           "Implementation"
         ],
@@ -2225,6 +2275,8 @@
       "fit": {
         "role": "Testing principles: one-reason-to-fail, test vs verifier, selective execution",
         "when": "Writing, reviewing, or deciding what tests a change needs",
+        "doing": "Write tests with one reason to fail each, distinct from verifiers, asserting behavior not implementation.",
+        "why": "Untested production code is a rumor about quality.",
         "serves": [
           "Implementation"
         ],
@@ -2308,6 +2360,8 @@
       "fit": {
         "role": "Two-axis review: Standards + Spec & Quality",
         "when": "Before merging, evaluating agent-written code, or is this ready",
+        "doing": "Review the diff on both axes — repo-declared standards and spec-vs-built — as parallel passes, never cross-ranked.",
+        "why": "Before merge is the only cheap moment to catch divergence.",
         "serves": [
           "Implementation"
         ],
@@ -2384,6 +2438,8 @@
       "fit": {
         "role": "Surgical structure improvement without behavior change",
         "when": "Code smells, duplication, god classes, technical debt",
+        "doing": "Move structure — extract, split, parameter objects — while behavior stays pinned by tests; clean commits at each step.",
+        "why": "Debt compounds; surgical passes keep the machine editable.",
         "serves": [
           "Implementation"
         ],
@@ -2464,6 +2520,8 @@
       "fit": {
         "role": "Change something everywhere it lives, no stale copy",
         "when": "Rename, reword, rebrand, bump, migrate, correct across all surfaces",
+        "doing": "Change the fact everywhere it lives — copy, renames, values, interfaces — leaving no stale copy behind.",
+        "why": "The second place a value lives is where the next bug is born.",
         "serves": [
           "Implementation"
         ],
@@ -2551,6 +2609,8 @@
       "fit": {
         "role": "Professional atomic commits with convention detection",
         "when": "Work is ready to commit; need proper staging and message",
+        "doing": "Split work into atomic units per the repo convention, stage precisely, write what/why bodies with real trailers.",
+        "why": "History is documentation; a garbage log destroys the project memory.",
         "serves": [
           "Implementation"
         ],
@@ -2638,6 +2698,8 @@
       "fit": {
         "role": "GitHub CLI/Actions: CI triage, workflow authoring, hardening",
         "when": "CI failing, PR checks, workflow edits, GitHub operations",
+        "doing": "Drive GitHub through the CLI router: PRs, checks, failing-CI diagnosis with classified causes, never past a permission boundary.",
+        "why": "Once code leaves the repo, the platform is the workflow.",
         "serves": [
           "Implementation"
         ],
@@ -2700,6 +2762,8 @@
       "fit": {
         "role": "Hypothesis-driven planning before complex implementation",
         "when": "Complex task needs rigorous decomposition before coding",
+        "doing": "Force structured plans before big moves: capture the request, form hypotheses that surface requirements, weigh trade-offs explicitly.",
+        "why": "When work grows in surface area, planning first is the shorter path.",
         "serves": [
           "Implementation"
         ],
@@ -2766,6 +2830,8 @@
       "fit": {
         "role": "Fan-out bounded slices to subagents in dependency-aware waves",
         "when": "Large approved plan with 3+ independent chunks",
+        "doing": "Decide the fan-out in chat, keep sensitive slices local, bound waves to the concurrency cap, give subagents bounded contracts.",
+        "why": "Large jobs finish when splitting is designed, not improvised.",
         "serves": [
           "Implementation"
         ],
@@ -2830,6 +2896,8 @@
       "fit": {
         "role": "Regime dispatcher: activation, supervision, routing, memory, layout",
         "when": "Always active while project declares Viber in AGENTS.md",
+        "doing": "Run the regime itself: umbrella routing, capture-on-arrival to memory, honest gaps, draft posture — no phase output of its own.",
+        "why": "The standing posture; every other skill runs inside it.",
         "serves": [
           "Shared"
         ],
@@ -2880,6 +2948,8 @@
       "fit": {
         "role": "Stress-test decisions and plans through relentless questioning",
         "when": "User wants to stress-test thinking, or a decision needs validation",
+        "doing": "Question relentlessly until every assumption is confirmed or explicitly marked pending — not assumed.",
+        "why": "Whatever is unclear now is cheaper to resolve now, in every phase.",
         "serves": [
           "Shared"
         ],
@@ -2938,6 +3008,8 @@
       "fit": {
         "role": "Close one design topic at a time with documented decisions",
         "when": "Undecided architecture; need sequential topic closure",
+        "doing": "Split mixed discussions into independent topics and walk each to a provisional close with the answer recorded.",
+        "why": "Open threads leak decisions; the deferred agenda lives in memory.md.",
         "serves": [
           "Shared"
         ],
@@ -2997,6 +3069,8 @@
       "fit": {
         "role": "Grows project-specific Viber extensions when no skill covers a need",
         "when": "A need keeps returning that no skill covers; repeated corrections",
+        "doing": "Prove the gap is real via the short ladder, then grow the project's own Viber version — never touching the fixed lifecycle.",
+        "why": "A need that keeps returning with no skill to own it is exactly this skill's trigger.",
         "serves": [
           "Shared"
         ],
@@ -3048,6 +3122,8 @@
       "fit": {
         "role": "Anti-rigidity posture: hold drafts as provisional, re-validate",
         "when": "Agent reifies drafts as law, anchors on earlier recommendations, stops improving",
+        "doing": "Melt drafts that froze into law, separate invariant from mechanism, re-open pruned options and re-validate — then re-close provisionally.",
+        "why": "During DR, any answer treated as unquestionable is the bug this fixes.",
         "serves": [
           "Shared"
         ],
@@ -3108,6 +3184,8 @@
       "fit": {
         "role": "Personal growing log of mistakes with fixes and checks",
         "when": "Before data modeling, API design, auth, state, UI, tests; or user says mistakes",
+        "doing": "Log mistakes made and observed — where each shows up and the fix — and check the log before similar work.",
+        "why": "The same mistake twice was a lesson skipped the first time.",
         "serves": [
           "Shared"
         ],
@@ -3171,6 +3249,8 @@
       "fit": {
         "role": "Entry command: deck registry, exclusions, memory bootstrap, AGENTS.md declaration",
         "when": "First Viber run in a project, or a refresh",
+        "doing": "Index the registered deck into the project registry, create the memory files, ensure the AGENTS.md declaration, start the flow at the right step.",
+        "why": "The entry point for a project entering Viber, and the refresh path for one already in it.",
         "serves": [],
         "after": [],
         "before": [],
@@ -3213,6 +3293,8 @@
       "fit": {
         "role": "Compaction: manifest-first restorable archiving of finished history",
         "when": "Active area grown fat with history; phase closes; user says free space",
+        "doing": "Archive finished history under .viber/.compact/<id>/ — manifest first, move never delete, every origin keeps a pointer.",
+        "why": "When an area grows fat with closed work, this makes room without loss.",
         "serves": [],
         "after": [],
         "before": [],
@@ -3257,6 +3339,8 @@
       "fit": {
         "role": "Task-scale mini-lifecycles: sequence.md as source of truth",
         "when": "Same multi-step sequence keeps being hand-assembled for same work class",
+        "doing": "Capture a recurring class of work as sequence.md plus lifecycle.md and lifecycle.mmd under .viber/flow/<name>/ — three files, explicit gates.",
+        "why": "A journey re-decided every run is a flow waiting to be written.",
         "serves": [],
         "after": [],
         "before": [],

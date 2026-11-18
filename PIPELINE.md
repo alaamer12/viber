@@ -127,9 +127,17 @@ Lifecycle steps own no skills: each step declares `{step, phase, goal, needs, po
 pool: deck skills declared as useful candidates for that step, from any deck, and `commands` lists
 Viber's own v-commands declared at that step. The installed binding lives skill-side in
 `fit.serves: [step names]`: any Skill from any deck can serve any step; vinit fills `serves` per
-project as it studies what the user actually has. A possible candidate not installed is a suggestion
+project as it studies what the user actually has — and fills two long fields per skill while it is at it:
+`fit.doing` (what exactly this skill is expected to do in this project) and `fit.why` (why it may be a next
+step here). `viber next` and `viber situation` print these as `do:` and `why it exists here`, under a
+`POSSIBLE NEXT STEPS` header — a serving skill must never ship a per-project census with them empty.
+`set <skill> doing "<text>"` / `set <skill> why "<text>"` keep both writable. A possible candidate not installed is a suggestion
 to surface, never a blocker. `step` shows goal + needs, the resolved roster, and remaining candidates;
-`next` walks the roster ordered topologically along within-step `after` edges.
+`next` walks the roster ordered topologically along within-step `after` edges, names the recorded previous
+step (`last:`, the newest closed telemetry invocation), then prints each candidate under
+`POSSIBLE NEXT STEPS` with *why this might be next* (edge hints + long hints), *why it exists here*
+(`fit.why`) and *do* (`fit.doing`); when nothing is unblocked it prints the step's needs and commands
+instead — the answer never goes empty while the step has work.
 
 `viber lint` audits the census read-only: schema keys, type/phase enums, dangling
 relations and serves, broken skill paths, census-vs-disk version drift, deck-membership mismatches,

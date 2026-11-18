@@ -28,7 +28,9 @@ def _ack(g: Globals, message: str) -> None:
 @command
 def use_cmd(
     skill: str,
-    step_override: str = typer.Option("", "--step-override", help="Record under this step name"),
+    step_override: str = typer.Option(
+        "", "--step-override", "-s", help="Record under this step name"
+    ),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -37,6 +39,7 @@ def use_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Record a skill invocation in telemetry (the AGENTS.md instruction)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     if not g.settings.telemetry:
         _ack(g, "telemetry disabled")
@@ -64,6 +67,7 @@ def outcome_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Close the newest open invocation of a skill with ok/fail/skip."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     if not g.settings.telemetry:
         _ack(g, "telemetry disabled")

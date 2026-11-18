@@ -83,6 +83,10 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
         entry.deck = value
         entry.history.append(
             {"date": today(), "event": f"deck resolved by user: {prev_deck} -> {value}"})
+    elif field is SetField.DOING:
+        entry.fit.doing = value.strip()
+    elif field is SetField.WHY:
+        entry.fit.why = value.strip()
     elif field is SetField.PATH:
         from pathlib import Path
         probe = Path(value)

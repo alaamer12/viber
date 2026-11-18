@@ -29,6 +29,8 @@ class Relation(_Model):
 class Fit(_Model):
     role: str = ""
     when: str = ""
+    doing: str = ""
+    why: str = ""
     serves: list[str] = []
     after: list[Relation] = []
     before: list[Relation] = []

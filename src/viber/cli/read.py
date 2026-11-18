@@ -46,15 +46,20 @@ def skill_cmd(
     content: bool | None = typer.Option(
         None,
         "--content/--no-content",
+        "-c",
         help="Content file paths only (with --content); omit the tree (with --no-content)",
     ),
     path_only: bool = typer.Option(False, "--path", "-p", help="Print the disk path only"),
     brief: bool = typer.Option(False, "--brief", "-b", help="One-line summary"),
     relations: bool | None = typer.Option(
-        None, "--relations/--no-relations", help="Fit section incl. relations"
+        None, "--relations/--no-relations", "-r", help="Fit section incl. relations"
     ),
-    use_cases: bool | None = typer.Option(None, "--use-cases/--no-use-cases"),
-    history: bool | None = typer.Option(None, "--history/--no-history"),
+    use_cases: bool | None = typer.Option(
+        None, "--use-cases/--no-use-cases", "-u", help="When-to-use situations"
+    ),
+    history: bool | None = typer.Option(
+        None, "--history/--no-history", "-H", help="Census history entries"
+    ),
     long_hints: bool | None = typer.Option(
         None, "--long", "-l", help="Show relation long_hint detail"
     ),
@@ -66,6 +71,7 @@ def skill_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Full census card for one skill: identity, fit, relations, content."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     if census_ops.entry_of(data, name) is None:
@@ -99,10 +105,12 @@ def skill_cmd(
 @command
 def step_cmd(
     name: str | None = typer.Argument(None),
-    needs: bool | None = typer.Option(None, "--needs/--no-needs", help="Show step needs"),
-    pool: bool | None = typer.Option(None, "--pool/--no-pool", help="Show uninstalled candidates"),
-    roster: bool = typer.Option(True, "--roster/--no-roster"),
-    commands: bool = typer.Option(True, "--commands/--no-commands"),
+    needs: bool | None = typer.Option(None, "--needs/--no-needs", "-n", help="Show step needs"),
+    pool: bool | None = typer.Option(
+        None, "--pool/--no-pool", "-p", help="Show uninstalled candidates"
+    ),
+    roster: bool = typer.Option(True, "--roster/--no-roster", "-r"),
+    commands: bool = typer.Option(True, "--commands/--no-commands", "-c"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -111,6 +119,7 @@ def step_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Goal, needs and resolved roster for a step (default: the current one)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     if name:
@@ -146,8 +155,10 @@ def step_cmd(
 @command
 def next_cmd(
     count: int = typer.Option(1, "--count", "-n", min=1, help="Show N unblocked candidates"),
-    reasons: bool | None = typer.Option(None, "--reasons/--no-reasons"),
-    suggestion: bool | None = typer.Option(None, "--suggestion/--no-suggestion"),
+    reasons: bool | None = typer.Option(None, "--reasons/--no-reasons", "-r"),
+    suggestion: bool | None = typer.Option(
+        None, "--suggestion/--no-suggestion", "-s", help="Telemetry successor hint"
+    ),
     long_hints: bool | None = typer.Option(None, "--long", "-l"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
@@ -157,9 +168,10 @@ def next_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Possible next steps — why each, what doing it means, and the skill-less needs."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
-    payload = resolution.next_candidates(data, g.db(), count=count, long=bool(long_hints))
+    payload = resolution.next_candidates(data, g.db(), count=count)
     if payload["step"] is None:
         return _fail("no current step")
     sel = g.selection_with(
@@ -172,7 +184,7 @@ def next_cmd(
 @command
 def deck_cmd(
     name: str | None = typer.Argument(None),
-    skills: bool | None = typer.Option(None, "--skills/--no-skills"),
+    skills: bool | None = typer.Option(None, "--skills/--no-skills", "-s"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -181,6 +193,7 @@ def deck_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Deck roster and metadata — all decks when no name is given."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     if name and name not in data.decks:
@@ -201,6 +214,7 @@ def status_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Phase, current step and census counts."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     emit("status", resolution.status_payload(g.load()), g.selection_with("status"), g.target())
     return 0
@@ -219,6 +233,7 @@ def list_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """All skills in a table, sortable (--by) and filterable (--filter)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     payload = resolution.list_payload(g.load(), by=by, flt=flt or None, brief=brief)
     emit("list", payload, g.selection_with("list"), g.target())
@@ -228,7 +243,7 @@ def list_cmd(
 @command
 def stats_cmd(
     name: str | None = typer.Argument(None),
-    since: str = typer.Option("", "--since", help="YYYY-MM-DD lower bound"),
+    since: str = typer.Option("", "--since", "-s", help="YYYY-MM-DD lower bound"),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -237,6 +252,7 @@ def stats_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Telemetry usage counts per skill (or one skill's history)."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     if name and census_ops.entry_of(data, name) is None:
@@ -260,7 +276,7 @@ def stats_cmd(
 
 @command
 def patterns_cmd(
-    top: int = typer.Option(15, "--top", min=1),
+    top: int = typer.Option(15, "--top", "-t", min=1),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -269,6 +285,7 @@ def patterns_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
+    """Most frequent skill-to-skill sequences from telemetry."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     assert g.load() is not None  # census presence validated for the uniform contract
     db = g.db()
@@ -292,8 +309,7 @@ def situation_cmd(
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
 ) -> int:
-    """One call answering "what is the situation": phase, step, roster, usage,
-    next move with its reasons, and the decisions still owed by the user."""
+    """The whole situation in one call: phase, step, roster, usage, next, owed decisions."""
     g = Globals(census, fmt, out, force, profile, include, exclude)
     data = g.load()
     step_name = resolution.current_step(data)
@@ -315,8 +331,18 @@ def situation_cmd(
         "next": (
             None
             if top is None
-            else {"skill": top["skill"], "when": top["when"], "reasons": top["reasons"]}
+            else {
+                "skill": top["skill"],
+                "when": top["when"],
+                "todo": top["todo"],
+                "doing": top["doing"],
+                "why": top["why"],
+                "reasons": top["reasons"],
+                "reason_long": top["reason_long"],
+            }
         ),
+        "needs": list(next(s for s in data.lifecycle if s.step == step_name).needs),
+        "previous": nxt["previous"],
         "open": [
             f"{f.subject}: {f.question}"
             for f in lint_core.run_lint(data, g.census_path)
