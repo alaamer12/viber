@@ -15,6 +15,11 @@ dependencies = [
     "pydantic>=2.7",
 ]
 
+[project.optional-dependencies]
+# rich arrives transitively from typer; this documented floor exists so the display
+# layer's rich mode is an installable promise even if that ever changes (docs/regime/display.md)
+rich = ["rich>=13.8"]
+
 [project.scripts]
 viber = "viber.app:main"
 

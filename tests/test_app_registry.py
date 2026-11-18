@@ -13,6 +13,7 @@ EXPECTED = sorted(
         "deck",
         "status",
         "situation",
+        "fields",
         "list",
         "ls",
         "stats",

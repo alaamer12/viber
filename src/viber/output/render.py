@@ -8,28 +8,19 @@ order, grouped under section titles. Values are plain JSON-ready types.
 from collections.abc import Callable
 from typing import Any, Final
 
+from viber.output.display import plain_table_lines
 from viber.output.fields import specs_for
 
 Renderer = Callable[[dict[str, Any], list[str]], str]
 
+# the one plain table formatter lives in the display layer; keep render's
+# historical (rows, columns) order for its ten call sites
+def _table(rows: list[list[Any]], columns: list[str]) -> list[str]:
+    return plain_table_lines(columns, rows)
+
 
 def _selected(selection: list[str], key: str) -> bool:
     return key in selection
-
-
-def _table(rows: list[list[str]], columns: list[str]) -> list[str]:
-    if not rows:
-        return ["(none)"]
-    widths = [len(c) for c in columns]
-    for row in rows:
-        for i, cell in enumerate(row):
-            widths[i] = max(widths[i], len(cell))
-    out = [
-        "  ".join(c.ljust(widths[i]) for i, c in enumerate(columns)),
-        "  ".join("-" * w for w in widths),
-    ]
-    out += ["  ".join(cell.ljust(widths[i]) for i, cell in enumerate(row)) for row in rows]
-    return out
 
 
 def _relation_lines(rels: list[dict[str, Any]], kind: str, long_hints: bool) -> list[str]:
@@ -284,6 +275,29 @@ def render_patterns(p: dict[str, Any], sel: list[str]) -> str:
     return "\n".join(_table(table, ["Sequence", "Count"]))
 
 
+def render_fields(p: dict[str, Any], sel: list[str]) -> str:
+    detail = p.get("detail")
+    if detail is not None:
+        return "\n".join(f"{k}: {v}" for k, v in detail.items())
+    if "fields" not in p and p.get("groups"):
+        table = [[r["group"], str(r["fields"])] for r in p["groups"]]
+        return "\n".join(_table(table, ["Group", "Fields"]))
+    table = [
+        [r["field"], r["type"], "yes" if r["required"] else "no", r["limit"], r["meaning"]]
+        for r in p.get("fields", [])
+    ]
+    lines: list[str] = []
+    flt = p.get("filter")
+    if flt:
+        bits = " ".join(f"{k}={v}" for k, v in flt.items() if v)
+        if _selected(sel, "count"):
+            lines.append(f"fields {bits} — {p.get('count', 0)} of {p.get('total', 0)}")
+        else:
+            lines.append(f"fields {bits}")
+    lines += _table(table, ["Field", "Type", "Req", "Limit", "Meaning"])
+    return "\n".join(lines)
+
+
 def render_config(p: dict[str, Any], sel: list[str]) -> str:
     if "keys" in p:
         rows = [
@@ -358,6 +372,7 @@ RENDERERS: Final[dict[str, Renderer]] = {
     "patterns": render_patterns,
     "lint": render_lint,
     "config": render_config,
+    "fields": render_fields,
     "ack": render_ack,
     "ack-show": render_write_ack,
     "drift": render_drift,

@@ -1,4 +1,4 @@
-"""Read commands: skill, step, next, deck, status, situation, list, stats, patterns.
+"""Read commands: skill, step, next, deck, status, situation, fields, list, stats, patterns.
 
 Handlers declare the seven global options explicitly (standard typer style) and
 assemble `Globals` in one line.
@@ -16,12 +16,15 @@ from viber.cli.deps import (
     FormatOpt,
     Globals,
     IncludeOpt,
+    NoRichOpt,
     OutOpt,
     ProfileOpt,
     command,
 )
 from viber.core import census_ops, resolution
 from viber.core import lint as lint_core
+from viber.models.fields_doc import FieldDoc
+from viber.output.display import BLIND, report_error
 from viber.output.emit import emit
 
 
@@ -35,8 +38,8 @@ def _apply(sel: list[str], overrides: dict[str, bool]) -> list[str]:
     return out
 
 
-def _fail(msg: str) -> int:
-    typer.secho(f"error: {msg}", fg="red", err=True)
+def _fail(msg: str, g: Globals | None = None) -> int:
+    report_error(g.display if g is not None else BLIND, msg)
     return 1
 
 
@@ -70,9 +73,10 @@ def skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Full census card for one skill: identity, fit, relations, content."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     if census_ops.entry_of(data, name) is None:
         return _fail(f"skill '{name}' not in census")
@@ -118,9 +122,10 @@ def step_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Goal, needs and resolved roster for a step (default: the current one)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     if name:
         step = next((s for s in data.lifecycle if s.step.lower() == name.lower()), None)
@@ -167,9 +172,10 @@ def next_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Possible next steps — why each, what doing it means, and the skill-less needs."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     payload = resolution.next_candidates(data, g.db(), count=count)
     if payload["step"] is None:
@@ -192,9 +198,10 @@ def deck_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Deck roster and metadata — all decks when no name is given."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     if name and name not in data.decks:
         return _fail(f"deck '{name}' not found")
@@ -213,9 +220,10 @@ def status_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Phase, current step and census counts."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     emit("status", resolution.status_payload(g.load()), g.selection_with("status"), g.target())
     return 0
 
@@ -232,9 +240,10 @@ def list_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """All skills in a table, sortable (--by) and filterable (--filter)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     payload = resolution.list_payload(g.load(), by=by, flt=flt or None, brief=brief)
     emit("list", payload, g.selection_with("list"), g.target())
     return 0
@@ -251,9 +260,10 @@ def stats_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Telemetry usage counts per skill (or one skill's history)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     if name and census_ops.entry_of(data, name) is None:
         return _fail(f"skill '{name}' not in census")
@@ -284,9 +294,10 @@ def patterns_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Most frequent skill-to-skill sequences from telemetry."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     assert g.load() is not None  # census presence validated for the uniform contract
     db = g.db()
     if not db.exists():
@@ -308,9 +319,10 @@ def situation_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """The whole situation in one call: phase, step, roster, usage, next, owed decisions."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     step_name = resolution.current_step(data)
     if step_name is None:
@@ -353,6 +365,108 @@ def situation_cmd(
     return 0
 
 
+def _group_of(path: str) -> str:
+    if "." not in path:
+        return "census"
+    return path.split(".", 1)[0].removesuffix("[]")
+
+
+@command
+def fields_cmd(
+    path: str | None = typer.Argument(
+        None,
+        help="One field path to fully explain (e.g. fit.doing), or the word 'groups' "
+        "to list the artifact groups",
+    ),
+    group: str | None = typer.Option(
+        None,
+        "--group",
+        "-G",
+        help="Show one artifact group only: census (unprefixed root), deck, step, skill, "
+        "fit, relation, content, history, frontmatter, config, telemetry",
+    ),
+    name: str | None = typer.Option(
+        None, "--name", "-N", help="Keep only paths containing this substring (e.g. -N hint)"
+    ),
+    census: CensusOpt = None,
+    fmt: FormatOpt = None,
+    out: OutOpt = None,
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
+) -> int:
+    """Explain EVERY field viber works with: census, frontmatter, config, telemetry."""
+    from viber.models.fields_doc import FIELD_INDEX
+
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    counts: dict[str, int] = {}
+    for d in FIELD_INDEX.values():
+        grp = _group_of(d.path)
+        counts[grp] = counts.get(grp, 0) + 1
+    group_rows = [{"group": k, "fields": v} for k, v in counts.items()]
+    if path == "groups":
+        emit("fields", {"groups": group_rows}, g.selection_with("fields"), g.target())
+        return 0
+    if path:
+        doc = FIELD_INDEX.get(path)
+        if doc is None:
+            return _fail(
+                f"no field '{path}' in the catalog — `viber fields groups` lists the groups", g
+            )
+        emit("fields", {"detail": _field_detail(doc)}, g.selection_with("fields"), g.target())
+        return 0
+    groups = sorted({_group_of(d.path) for d in FIELD_INDEX.values()})
+    if group and group not in groups:
+        return _fail(
+            f"no field group '{group}' — groups: {', '.join(groups)} "
+            "(counts: `viber fields groups`)",
+            g,
+        )
+    rows = [
+        {
+            "field": d.path,
+            "type": d.ftype,
+            "required": d.required,
+            "limit": d.limit or "-",
+            "meaning": d.meaning,
+        }
+        for d in FIELD_INDEX.values()
+        if (group is None or _group_of(d.path) == group)
+        and (name is None or name.lower() in d.path.lower())
+    ]
+    payload: dict[str, Any] = {
+        "fields": rows,
+        "count": len(rows),
+        "total": len(FIELD_INDEX),
+        "groups": group_rows,
+    }
+    if group or name:
+        payload["filter"] = {"group": group or "", "name": name or ""}
+    emit("fields", payload, g.selection_with("fields"), g.target())
+    return 0
+
+
+def _field_detail(doc: FieldDoc) -> dict[str, Any]:
+    from viber.models.limits import LIMITS
+
+    lim = LIMITS.get(doc.limit) if doc.limit else None
+    limit_line = "-"
+    if lim is not None:
+        limit_line = f"{lim.identity}: {lim.cap} {lim.unit} — {lim.why} Fix: {lim.recovery}"
+    return {
+        "path": doc.path,
+        "type": doc.ftype,
+        "required": str(doc.required).lower(),
+        "default": doc.default,
+        "written_by": doc.written_by,
+        "used_by": doc.used_by,
+        "meaning": doc.meaning,
+        "limit": limit_line,
+    }
+
+
 COMMANDS: dict[str, Callable[..., None]] = {
     "skill": skill_cmd,
     "step": step_cmd,
@@ -360,6 +474,7 @@ COMMANDS: dict[str, Callable[..., None]] = {
     "deck": deck_cmd,
     "status": status_cmd,
     "situation": situation_cmd,
+    "fields": fields_cmd,
     "list": list_cmd,
     "ls": list_cmd,
     "stats": stats_cmd,

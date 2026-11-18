@@ -54,6 +54,7 @@ Before shipping:
 - Every relative link in the changed skill files resolves.
 - Frontmatter: `name` matches folder, `description` is single-line ≤ 1024 chars.
 - `viber refresh <skill>` succeeds (re-reads frontmatter + content tree).
+- No rich imports outside `src/viber/output/display.py`: `rg "^\s*(from rich|import rich)" src/viber/` matched against `output/display.py` returns nothing.
 - `viber status` shows expected phase and blocker count.
 - No design rationale leaked into skill references (skills tell the agent what to do, not why the design exists).
 - No settled decision contradicted by the skill's instructions.
@@ -142,6 +143,11 @@ instead — the answer never goes empty while the step has work.
 `viber lint` audits the census read-only: schema keys, type/phase enums, dangling
 relations and serves, broken skill paths, census-vs-disk version drift, deck-membership mismatches,
 candidates missing from the census, unclassified overlaps. It exits 1 on errors or open decisions.
+`viber lint --remote` (`-R`) adds the network truth for decks declaring a `remote`: the deck's local clone
+HEAD is compared against `origin` HEAD — `remote-differs` (pull + `viber refresh --all` fixes it),
+`remote-unreachable` (offline is a skip, not a census failure), and `remote-no-clone` (a declared remote
+whose registry is a pointer, not a clone — nothing to check). All three are warnings: they inform, they
+never flip the exit code or block a run.
 When one skill name is claimed by **two decks** (conflicting versions or sources), lint does NOT pick
 a winner — it emits an `ASK USER` finding: the agent must put the choice to the user, then record it
 with `set <skill> deck <chosen>`, which rewrites all deck membership lists and logs the decision to

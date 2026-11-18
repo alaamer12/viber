@@ -608,6 +608,11 @@ dependencies = [
     { name = "typer" },
 ]
 
+[package.optional-dependencies]
+rich = [
+    { name = "rich" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "mypy" },
@@ -618,8 +623,10 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pydantic", specifier = ">=2.7" },
+    { name = "rich", marker = "extra == 'rich'", specifier = ">=13.8" },
     { name = "typer", specifier = ">=0.12" },
 ]
+provides-extras = ["rich"]
 
 [package.metadata.requires-dev]
 dev = [

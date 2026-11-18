@@ -7,7 +7,12 @@ from viber.core.census_ops import entry_of, rels
 from viber.data.frontmatter import list_content, parse_frontmatter
 from viber.data.store import CensusUsageError, save_census
 from viber.models.domain import Phase, SetField, SkillType
+from viber.models.limits import append_history, guard_chars, guard_items
 from viber.models.schema import Census, Content, SkillEntry
+
+
+def _roll_note(evicted: int) -> str:
+    return f" (history rolled at cap — evicted {evicted} oldest)" if evicted else ""
 
 
 def today() -> str:
@@ -43,18 +48,24 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
             raise CensusUsageError(f"phase must be one of DR|IP|PP, got {value!r}") from None
         old = census.projectPhase
         census.projectPhase = parsed_phase
-        census.history.append({"date": today(), "event": f"phase transition {old}->{value}"})
+        evicted = append_history(
+            census.history, {"date": today(), "event": f"phase transition {old}->{value}"}
+        )
         save_census(census_path, census)
-        return f"projectPhase: {old} -> {value}"
+        return f"projectPhase: {old} -> {value}{_roll_note(evicted)}"
     entry = entry_of(census, target)
     if entry is None:
         raise KeyError(f"skill '{target}' not in census")
+    note = ""
     if field is SetField.BLOCKERS:
         import json
 
         parsed = json.loads(value)
         if not isinstance(parsed, list):
             raise CensusUsageError("blockers must be a JSON array")
+        guard_items("blockers", parsed)
+        for item in parsed:
+            guard_chars("blocker", str(item))
         entry.fit.blockers = [str(v) for v in parsed]
     elif field is SetField.PHASE:
         if value == "null":
@@ -84,6 +95,9 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
         parsed = json.loads(value)
         if not isinstance(parsed, list) or not all(isinstance(x, str) for x in parsed):
             raise CensusUsageError("use_cases must be a JSON array of strings")
+        guard_items("use_cases", parsed)
+        for item in parsed:
+            guard_chars("use_case", item)
         entry.use_cases = parsed
     elif field is SetField.DECK:
         if value not in census.decks:
@@ -95,13 +109,19 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
         census.decks[value].skills.append(target)
         census.decks[value].skills.sort()
         entry.deck = value
-        entry.history.append(
-            {"date": today(), "event": f"deck resolved by user: {prev_deck} -> {value}"})
+        evicted = append_history(
+            entry.history,
+            {"date": today(), "event": f"deck resolved by user: {prev_deck} -> {value}"},
+        )
+        note = _roll_note(evicted)
     elif field is SetField.DOING:
+        guard_chars("doing", value.strip())
         entry.fit.doing = value.strip()
     elif field is SetField.WHY:
+        guard_chars("why", value.strip())
         entry.fit.why = value.strip()
     elif field is SetField.PATH:
+        guard_chars("path", value)
         from pathlib import Path
         probe = Path(value)
         if not probe.is_absolute():
@@ -111,22 +131,26 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
             raise CensusUsageError(f"no SKILL.md at {value}")
         old_path = entry.path
         entry.path = value
-        entry.history.append({"date": today(), "event": f"path updated: {old_path} -> {value}"})
+        evicted = append_history(
+            entry.history, {"date": today(), "event": f"path updated: {old_path} -> {value}"}
+        )  # fmt: skip
+        note = _roll_note(evicted)
     save_census(census_path, census)
-    return f"{target}.{field.value} updated"
+    return f"{target}.{field.value} updated{note}"
 
 
 def log_event(census: Census, target: str, event: str, census_path: Any) -> str:
+    guard_chars("event", event)
     record = {"date": today(), "event": event}
     if target == ".":
-        census.history.append(record)
+        evicted = append_history(census.history, record)
     else:
         entry = entry_of(census, target)
         if entry is None:
             raise KeyError(f"skill '{target}' not in census")
-        entry.history.append(record)
+        evicted = append_history(entry.history, record)
     save_census(census_path, census)
-    return f"logged: {event}"
+    return f"logged: {event}{_roll_note(evicted)}"
 
 
 def add_skill(
@@ -141,6 +165,12 @@ def add_skill(
 ) -> str:
     from pathlib import Path
 
+    guard_chars("name", name)
+    guard_chars("path", path)
+    guard_items("serves", serves)
+    guard_items("use_cases", use_cases)
+    for case in use_cases:
+        guard_chars("use_case", case)
     if entry_of(census, name):
         raise CensusUsageError(f"skill '{name}' already exists")
     if not deck or not path:
@@ -151,6 +181,9 @@ def add_skill(
     if not (skill_dir / "SKILL.md").is_file():
         raise CensusUsageError(f"no SKILL.md at {path}")
     fm = parse_frontmatter(skill_dir / "SKILL.md")
+    guard_chars("description", str(fm.get("description", "")))
+    if fm.get("version"):
+        guard_chars("version", str(fm["version"]))
     if deck in census.decks and name not in census.decks[deck].skills:
         census.decks[deck].skills.append(name)
         census.decks[deck].skills.sort()
@@ -230,11 +263,14 @@ def refresh_skill(census: Census, name: str, census_path: Any) -> str:
     if not skill_md.is_file():
         raise CensusUsageError(f"SKILL.md not found at {skill_dir}")
     fm = parse_frontmatter(skill_md)
+    if fm.get("version"):
+        guard_chars("version", str(fm["version"]))
+    guard_chars("description", str(fm.get("description", "")))
     entry.version = fm.get("version")
     entry.description = fm.get("description", "")
     entry.content = Content.model_validate(list_content(skill_dir))
-    entry.history.append({"date": today(), "event": "refreshed from disk"})
-    return f"refreshed: {name} v{entry.version}"
+    evicted = append_history(entry.history, {"date": today(), "event": "refreshed from disk"})
+    return f"refreshed: {name} v{entry.version}{_roll_note(evicted)}"
 
 
 def save(census: Census, census_path: Any) -> None:

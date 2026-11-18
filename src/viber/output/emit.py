@@ -1,8 +1,9 @@
 """The emit sink: one exit path for every command.
 
-Rules: files get compact plain output only (never ANSI); TTY gets a colorized pass
-when rich/ansi is usable; JSON is machine-strict (ASCII-safe dumps). Write is atomic,
-refuses existing targets without force, and reports bytes on stderr so stdout and
+Rules: files get compact plain output only (never ANSI); a resolved rich display
+mode routes structured payloads through display_cmd (boxed layout, color only on a
+real tty); JSON is machine-strict (ASCII-safe dumps). Write is atomic, refuses
+existing targets without force, and reports bytes on stderr so stdout and
 exit codes stay clean for pipes.
 """
 
@@ -14,9 +15,9 @@ from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 from viber.models.domain import FormatKind
+from viber.output.display import PLAIN, Display
+from viber.output.display_cmd import render_command
 from viber.output.render import registry_order, render_text
-
-_IS_WIN_LEGACY = sys.platform == "win32"
 
 
 @runtime_checkable
@@ -34,6 +35,7 @@ class EmitTarget:
     fmt: FormatKind = FormatKind.TXT
     out: Path | None = None
     force: bool = False
+    display: Display = PLAIN
 
 
 def _strip_long_hints(payload: dict[str, Any], selection: list[str]) -> dict[str, Any]:
@@ -69,39 +71,24 @@ def _has_registry(command: str) -> bool:
     return command in REGISTRY
 
 
-def _colorize(text: str) -> str:
-    lines = []
-    for line in text.split("\n"):
-        if (
-            line
-            and not line.startswith((" ", "-"))
-            and (": " in line and line.split(":")[0].islower() and not line.startswith("- "))
-        ):
-            key, _, val = line.partition(": ")
-            lines.append(f"\x1b[36m{key}\x1b[0m: {val}")
-        elif line and not line.startswith((" ", "-")):
-            lines.append(f"\x1b[1m{line}\x1b[0m")
-        else:
-            lines.append(line)
-    return "\n".join(lines)
-
-
 def emit(command: str, payload: dict[str, Any], selection: list[str], target: EmitTarget) -> None:
     if target.fmt == FormatKind.JSON:
         data = filter_payload(command, payload, selection)
         if command == "skill":
             data = _strip_long_hints(data, selection)
         text = json.dumps(data, indent=2)
+    elif target.out is not None:
+        # files are machine contracts: always the plain renderers, never rich
+        text = render_text(command, payload, selection)
+    elif target.display.rich:
+        text = render_command(command, payload, selection, target.display)
     else:
         text = render_text(command, payload, selection)
 
     if target.out is not None:
         _write_file(target.out, text, target.force)
         return
-    if target.fmt == FormatKind.TXT and sys.stdout.isatty() and not _IS_WIN_LEGACY:
-        print(_colorize(text))
-    else:
-        print(text)
+    print(text)
 
 
 def _write_file(path: Path, text: str, force: bool) -> None:

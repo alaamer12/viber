@@ -19,6 +19,7 @@ from viber.cli.deps import (
     FormatOpt,
     Globals,
     IncludeOpt,
+    NoRichOpt,
     OutOpt,
     ProfileOpt,
     command,
@@ -76,9 +77,10 @@ def list_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Every settings key: value, source layer, default."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     st = _settings(g)
     rows = [
         {
@@ -103,9 +105,10 @@ def get_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Effective value of one key and the layer it came from."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     st = _settings(g)
     payload = {
         "key": key.value,
@@ -130,9 +133,10 @@ def set_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Write one settings key to the project layer (or --user / --path)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     target = _target(user, path)
     coerced = _coerce(key, value)
     config_store.set_value(target, key.value, coerced)
@@ -152,9 +156,10 @@ def unset_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Remove a key from one layer; the ack names what takes over."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     target = _target(user, path)
     if not config_store.unset_value(target, key.value):
         emit_rows(g, {"message": f"nothing to unset for {key.value} in {target}"}, ack=True)
@@ -179,9 +184,10 @@ def path_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Show the config files and plugin dirs, with exists/absent marks."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     paths = config_store.locate(os.environ)
 
     def mark(p: Path) -> str:

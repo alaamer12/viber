@@ -113,6 +113,14 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
         _f("user", "source", _ALL),
         _f("plugin_dirs", "source", _STD_FULL),
     ),
+    "fields": (
+        _f("fields", "rows", _ALL),
+        _f("detail", "rows", _ALL),
+        _f("filter", "core", _ALL),
+        _f("count", "core", frozenset({Profile.FULL})),
+        _f("total", "core", frozenset({Profile.FULL})),
+        _f("groups", "rows", _ALL),
+    ),
 }
 
 

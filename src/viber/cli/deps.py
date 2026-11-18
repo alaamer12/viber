@@ -19,6 +19,7 @@ from viber.data.store import CensusError, CensusUsageError, load_census, resolve
 from viber.data.telemetry import TelemetryDB
 from viber.models.domain import FormatKind, Profile
 from viber.models.schema import Census
+from viber.output.display import PLAIN, report_error, report_warning, resolve_display
 from viber.output.emit import EmitError, EmitTarget
 from viber.output.profiles import ProfileError, resolve_selection
 
@@ -41,6 +42,14 @@ IncludeOpt = Annotated[
 ExcludeOpt = Annotated[
     str | None, typer.Option("--exclude", "-E", help="Comma list of dropped fields")
 ]
+NoRichOpt = Annotated[
+    bool,
+    typer.Option(
+        "--no-rich",
+        "-nr",
+        help="Plain output: no rich tables or color [env VIBER_RICH] [default: auto-detect]",
+    ),
+]
 
 
 class Globals:
@@ -55,7 +64,10 @@ class Globals:
         profile: Profile | None,
         include: str | None,
         exclude: str | None,
+        *,
+        no_rich: bool = False,
     ) -> None:
+        self.display = resolve_display(no_rich)
         loaded = config_store.load(os.environ)
         settings = resolve(
             Flags(census, fmt, out, force, profile, include, exclude),
@@ -63,8 +75,8 @@ class Globals:
             loaded.project,
             loaded.user,
         )
-        for warning in settings.warnings:
-            typer.secho(f"warning: {warning}", fg="yellow", err=True)
+        for warning in (*self.display.warnings, *loaded.warnings, *settings.warnings):
+            report_warning(self.display, warning)
         self.settings = settings
         self.census_path = resolve_census_path(settings.census)
         self.fmt = settings.format
@@ -101,7 +113,9 @@ class Globals:
         return [k for k in registry_order(command) if k in sel]
 
     def target(self) -> EmitTarget:
-        return EmitTarget(fmt=self.fmt, out=self.out, force=self.force)
+        # files are machine contracts: the plain display, whatever the terminal is
+        display = PLAIN if self.out is not None else self.display
+        return EmitTarget(fmt=self.fmt, out=self.out, force=self.force, display=display)
 
     def db(self) -> TelemetryDB:
         return TelemetryDB(self.census_path.parent / "telemetry.db")
@@ -115,13 +129,14 @@ def command(fn: Callable[..., int]) -> Callable[..., None]:
 
     @functools.wraps(fn)
     def wrapper(*args: Any, **kwargs: Any) -> None:
+        display = resolve_display(bool(kwargs.get("no_rich")))
         try:
             code = fn(*args, **kwargs)
         except (CensusError, EmitError, ConfigError, KeyError) as exc:
-            typer.secho(f"error: {exc}", fg="red", err=True)
+            report_error(display, str(exc))
             raise typer.Exit(1) from exc
         except (ProfileError, CensusUsageError, ValueError) as exc:
-            typer.secho(f"error: {exc}", fg="red", err=True)
+            report_error(display, str(exc))
             raise typer.Exit(2) from exc
         except typer.Exit:
             raise

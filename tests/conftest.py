@@ -17,6 +17,9 @@ def hermetic_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         monkeypatch.delenv(var, raising=False)
     monkeypatch.setenv("VIBER_CONFIG", str(tmp_path / "absent-config.json"))
     monkeypatch.setenv("VIBER_CONFIG_HOME", str(tmp_path / "absent-config-home"))
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.delenv("TERM", raising=False)
+    monkeypatch.setenv("COLUMNS", "80")
 
 MINI: dict[str, Any] = {
     "name": "viber",

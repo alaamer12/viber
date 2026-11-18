@@ -16,7 +16,9 @@ Local index: [regime/index.md](regime/index.md)
 | `regime/supervision.md` | the umbrella — activation, participation, rerouting rule |
 | `regime/structure.md` | the canonical layout — root-files, code, `tools/`, `scripts/`, `artifacts/`, `scratch/`, `.viber/` |
 | `regime/memory.md` | the conversational ledger — `memory.md` / `settled.md` / `learnt.md` |
+| `regime/display.md` | presentation modes — rich/plain layout, color axis, `--no-rich`, byte-clean pipes |
 | `regime/config.md` | the settings chain — defaults, layers, the config command family, the internal plugin surface |
+| `regime/limits.md` | field caps and cataloged violations — write guards, rolling history, lint surface, `viber fields` |
 
 ## Commands — the v-commands
 

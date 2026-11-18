@@ -959,9 +959,9 @@
       ]
     },
     "architecture": {
-      "version": "2.0.2",
+      "version": "2.2.0",
       "type": "battery",
-      "description": "Orchestrates and drafts an application's complete technical architecture documentation suite across its core pillars (language conventions, error handling, visual UI/interaction, relational/SQL data modeling, plugin and settings extensibility under the Open/Closed Principle, cross-platform multi-device mechanics, accessibility/sensory adaptation, and display/notation architecture (how values are expressed - precision levels, container fit, locale display, voice-typeface pairings)), invoking each specialized sub-pillar to author binding specifications into the project's documentation suite (<docs>/ or <docs>/architecture/).",
+      "description": "Orchestrates and drafts an application's complete technical architecture documentation suite across its core pillars (language conventions, error handling, visual UI/interaction, relational/SQL data modeling, plugin and settings extensibility under the Open/Closed Principle, cross-platform multi-device mechanics, accessibility/sensory adaptation, and display/notation architecture (how values are expressed - precision levels, container fit, locale display, voice-typeface pairings), and media handling (asset sourcing and brand-mark policy, formats and loading posture, fonts delivery, embed facades)), invoking each specialized sub-pillar to author binding specifications into the project's documentation suite (<docs>/ or <docs>/architecture/).",
       "use_cases": [
         "a new service or monorepo needing pillar docs",
         "onboarding engineers to the system shape",
@@ -990,6 +990,12 @@
           "display/references/display-principles.md",
           "error/references/error-architecture-principles.md",
           "language/references/polyglot-language-conventions.md",
+          "media/references/brand-marks.md",
+          "media/references/discovery-interview.md",
+          "media/references/fonts-delivery.md",
+          "media/references/raster-loading.md",
+          "media/references/svg-engineering.md",
+          "media/references/time-based-media.md",
           "plugin/references/build-time-vs-runtime.md",
           "plugin/references/composition-and-layering.md",
           "plugin/references/failure-modes-and-anti-patterns.md",
@@ -1008,6 +1014,7 @@
           "display/assets/templates/display-architecture-template.md",
           "error/assets/templates/error-architecture-template.md",
           "language/assets/templates/language-conventions-template.md",
+          "media/assets/templates/media-architecture-template.md",
           "plugin/assets/templates/plugin-contract-template.md",
           "plugin/assets/templates/settings-architecture-template.md",
           "ui/assets/templates/ui-contracts-template.md"
@@ -1022,6 +1029,7 @@
           "display/examples/display-walkthrough.md",
           "error/examples/errors-polyglot-walkthrough.md",
           "language/examples/polyglot-walkthrough.md",
+          "media/examples/media-walkthrough.md",
           "plugin/examples/multi-source-settings-walkthrough.md",
           "ui/examples/ui-walkthrough.md"
         ]
@@ -1107,6 +1115,14 @@
       "history": [
         {
           "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
+        {
+          "date": "2026-11-18",
+          "event": "refreshed from disk"
+        },
+        {
+          "date": "2026-11-18",
           "event": "refreshed from disk"
         }
       ]
@@ -1412,9 +1428,9 @@
       ]
     },
     "typing": {
-      "version": "1.0.2",
+      "version": "1.2.0",
       "type": "battery",
-      "description": "Type-hinting experience, one skill, two levels: harden (the general craft — brands for raw types, creation points, boundary checks that turn untrusted data into typed values, compiler-first rejection, validation libraries and database constraints, in any language) and tiers (the opt-in three-tier architecture — primitives, brands, shapes — with its conversion path). The router picks ONE level and reads only its method.md. Default to harden; reach for tiers only when the project or user chose it (detect primitives/, brands/, shapes/ folders or the word tiers) — never impose the architecture or a naming scheme. Triggers: improve/tighten/audit types, stringly-typed or primitive-obsessed code, branded/NewType/opaque types, validate config or API contracts, make wrong values an error, type-up, tier-up, tiered types, primitives brands shapes, adopt the tier architecture, promote this to a brand. Golden rule: reuse existing types, never reinvent them. Tier means type-system tiers only, never architecture layers.",
+      "description": "Type-hinting experience, one skill, two levels: harden (the general craft - brands for raw types, creation points, boundary checks, compiler-first rejection, the literal-vs-enum tie-breaker, overloads/overrides/dispatch/wrappers, weak-type holes (any-holes, bare containers, exhaustiveness), validation/DB constraints) and tiers (the opt-in three-tier architecture - primitives, brands, shapes - with its conversion path). The router picks ONE level and reads only its method.md. Default to harden; tiers only when the project or user chose it (detect primitives/, brands/, shapes/ or the word tiers) - never impose it. Triggers: improve/tighten/audit types, stringly-typed code, branded/NewType/opaque types, literal vs enum, overload/override/dispatch, wrapper typing, validate config or API contracts, make wrong values an error, type-up, tier-up, tiered types, adopt the tier architecture. Golden rule: reuse existing types, never reinvent them. Tier means type-system tiers only, never architecture layers.",
       "use_cases": [
         "hardening raw inputs at system boundaries",
         "adopting tiered typing on a codebase",
@@ -1427,10 +1443,12 @@
         "entry": "SKILL.md",
         "references": [
           "harden/references/database-constraints.md",
+          "harden/references/overloads-overrides-dispatch.md",
           "harden/references/principles.md",
           "harden/references/reuse-before-create.md",
           "harden/references/terminology.md",
           "harden/references/tooling-adaptation.md",
+          "harden/references/weak-types.md",
           "harden/references/wrong-type-errors.md",
           "tiers/references/migration.md",
           "tiers/references/tiers.md"
@@ -1486,6 +1504,10 @@
       "history": [
         {
           "date": "2026-11-16",
+          "event": "refreshed from disk"
+        },
+        {
+          "date": "2026-11-18",
           "event": "refreshed from disk"
         }
       ]

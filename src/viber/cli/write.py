@@ -13,6 +13,7 @@ from viber.cli.deps import (
     FormatOpt,
     Globals,
     IncludeOpt,
+    NoRichOpt,
     OutOpt,
     ProfileOpt,
     command,
@@ -44,9 +45,10 @@ def set_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
-    """Write one census field: set <skill> <field> <json-value> ('.' = project fields)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    """Write one census field (caps and meanings: viber fields). set <skill> <field> <value>."""
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     message = mutations.set_field(data, skill, field, value, g.census_path)
     extra = None
@@ -69,9 +71,10 @@ def log_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
-    """Append a dated event to a skill's history."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    """Append a dated event to a skill's history (rolling at cap — viber fields)."""
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     _ack(g, mutations.log_event(data, skill, event, g.census_path))
     return 0
@@ -92,9 +95,10 @@ def add_skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
-    """Register a new skill: deck, disk path, served steps, type, use-cases."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    """Register a new skill: deck, path, served steps, type, use-cases (caps: viber fields)."""
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     steps = [s.strip() for s in serves.split(",") if s.strip()]
     for s in steps:
@@ -120,9 +124,10 @@ def remove_skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Drop a skill from the census (--dry-run previews the fallout)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     _ack(g, mutations.remove_skill(data, name, g.census_path, dry=dry_run))
     return 0
@@ -142,9 +147,10 @@ def refresh_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Re-read a skill's frontmatter and content tree from disk (or --all)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
     if not name and not everything:
         raise ValueError("give a skill name or --all")
@@ -173,6 +179,12 @@ def refresh_cmd(
 def lint_cmd(
     only: Severity | None = typer.Option(None, "--only", help="error|warning|question"),
     ask_only: bool = typer.Option(False, "--ask-only", "-a"),
+    remote: bool = typer.Option(
+        False,
+        "--remote",
+        "-R",
+        help="Check deck git remotes against upstream (network; offline degrades to warning)",
+    ),
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -180,18 +192,20 @@ def lint_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Audit the census; deck conflicts surface as ASK USER decisions."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     data = g.load()
-    findings = lint_core.run_lint(data, g.census_path)
+    all_findings = lint_core.run_lint(data, g.census_path, remote=remote)
+    findings = all_findings
     if only:
         findings = [f for f in findings if f.severity is only]
     if ask_only:
         findings = [f for f in findings if f.severity is Severity.QUESTION]
     payload: dict[str, Any] = {
         "findings": [_finding_dict(f) for f in findings],
-        "summary": lint_core.summarize(lint_core.run_lint(data, g.census_path)),
+        "summary": lint_core.summarize(all_findings),
     }
     emit("lint", payload, g.selection_with("lint"), g.target())
     summary: dict[str, int] = payload["summary"]

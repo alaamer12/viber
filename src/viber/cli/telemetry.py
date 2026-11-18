@@ -11,6 +11,7 @@ from viber.cli.deps import (
     FormatOpt,
     Globals,
     IncludeOpt,
+    NoRichOpt,
     OutOpt,
     ProfileOpt,
     command,
@@ -18,6 +19,7 @@ from viber.cli.deps import (
 from viber.core.census_ops import current_step, entry_of
 from viber.data.telemetry import now_iso
 from viber.models.domain import Outcome
+from viber.output.display import report_error
 from viber.output.emit import emit
 
 
@@ -38,15 +40,16 @@ def use_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Record a skill invocation in telemetry (the AGENTS.md instruction)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     if not g.settings.telemetry:
         _ack(g, "telemetry disabled")
         return 0
     data = g.load()
     if entry_of(data, skill) is None:
-        typer.secho(f"error: skill '{skill}' not in census", fg="red", err=True)
+        report_error(g.display, f"skill '{skill}' not in census")
         return 1
     step = step_override or (current_step(data) or None)
     g.db().record_invocation(skill, now_iso(), step, data.projectPhase)
@@ -66,9 +69,10 @@ def outcome_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
 ) -> int:
     """Close the newest open invocation of a skill with ok/fail/skip."""
-    g = Globals(census, fmt, out, force, profile, include, exclude)
+    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     if not g.settings.telemetry:
         _ack(g, "telemetry disabled")
         return 0
@@ -76,10 +80,10 @@ def outcome_cmd(
     assert data is not None
     db = g.db()
     if not db.exists():
-        typer.secho("error: no telemetry db", fg="red", err=True)
+        report_error(g.display, "no telemetry db")
         return 1
     if db.close_open(skill, result.value, note) is None:
-        typer.secho(f"error: no open invocation for '{skill}'", fg="red", err=True)
+        report_error(g.display, f"no open invocation for '{skill}'")
         return 1
     _ack(g, f"{skill} -> {result.value}")
     return 0

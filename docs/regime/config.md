@@ -115,6 +115,7 @@ distribution story. `VIBER_PLUGINS=0` kills it instantly.
 | `supervision.md` | settings files live under `.viber` like all Viber state; the umbrella never reroutes them elsewhere |
 | emit/profile layer | `profile`/`format` config values feed the same `-P`/`-f` machinery — no second shaping path |
 | telemetry | `telemetry false` gates the two writers (`use`, `outcome`); readers already handle an absent db |
+| `display.md` | presentation is **not** a chain key: display capability is per-machine (flag/env), chain keys are per-project policy |
 
 ## 8. Rules
 
@@ -122,6 +123,8 @@ distribution story. `VIBER_PLUGINS=0` kills it instantly.
 - Explicit flag beats everything; that is how a user escapes their own defaults.
 - CLI sole writer; hand-editing is drift, not workflow.
 - Reads warn and fall through; writes refuse or succeed, never half-write.
+- Console capability never enters the chain (`display.md` owns it) — a committed config must not silently
+  downgrade a teammate's terminal.
 - Plugins: default off, add-only, skip-and-warn, visible opt-in.
 - No caching of resolved settings across a process boundary in tests; two file reads per command is the price of honesty.
 

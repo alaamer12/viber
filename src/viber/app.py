@@ -6,13 +6,18 @@ Adding a command = write the handler, put it in the module's COMMANDS dict.
 import os
 import sys
 
-import typer
+# VIBER_RICH=0 must be seen by typer before it loads, so --help panels degrade too
+if os.environ.get("VIBER_RICH", "").strip().lower() in {"0", "false", "no", "off"}:
+    os.environ.setdefault("TYPER_USE_RICH", "0")
+
+import typer  # noqa: E402
 
 from viber import __version__
 from viber.cli import registry
 from viber.core.settings import Flags, Settings, resolve
 from viber.data import config_store
 from viber.data.config_store import ConfigPaths
+from viber.output.display import report_warning, resolve_display
 
 
 def _boot() -> tuple[Settings, ConfigPaths]:
@@ -20,8 +25,9 @@ def _boot() -> tuple[Settings, ConfigPaths]:
     while commands are still being registered."""
     loaded = config_store.load(os.environ)
     settings = resolve(Flags(), os.environ, loaded.project, loaded.user)
-    for warning in (*loaded.warnings, *settings.warnings):
-        print(f"warning: {warning}", file=sys.stderr)
+    display = resolve_display()
+    for warning in (*display.warnings, *loaded.warnings, *settings.warnings):
+        report_warning(display, warning)
     return settings, config_store.locate(os.environ)
 
 
@@ -39,7 +45,7 @@ def build_app() -> typer.Typer:
         plugin_dirs=(paths.project_plugins, paths.user_plugins),
     )
     for warning in warnings:
-        print(f"warning: {warning}", file=sys.stderr)
+        report_warning(resolve_display(), warning)
     return app
 
 
