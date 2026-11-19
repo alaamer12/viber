@@ -121,6 +121,13 @@ def _skill(payload: dict[str, Any], sel: list[str]) -> list[Part]:
         parts.append(TextPart("content", "bold"))
         files = "\n".join(f"  {f}" for f in _content_files(content))
         parts.append(TextPart(files, "dim"))
+    notes = payload.get("notes") or []
+    if _sel(sel, "notes") and notes:
+        parts.append(TextPart("notes", "bold"))
+        parts += [
+            TextPart(f"• {n.get('date', '?')} [{n.get('context', '?')}] {n.get('text', '')}")
+            for n in notes
+        ]
     return parts
 
 
@@ -192,6 +199,14 @@ def _blocked_parts(payload: dict[str, Any], sel: list[str]) -> list[Part]:
     return [TextPart("blocked:", "red"), TablePart(["Skill", "Blockers"], rows)]
 
 
+def _revisit_parts(payload: dict[str, Any], sel: list[str]) -> list[Part]:
+    if not (_sel(sel, "revisit") and payload.get("revisit")):
+        return []
+    return [TextPart("REVISIT (recurring, not yet ok)", "bold bright_magenta")] + [
+        TextPart(f"  • {r['skill']}: {r['reason']}") for r in payload["revisit"]
+    ]
+
+
 def _next(payload: dict[str, Any], sel: list[str]) -> list[Part]:
     header = "POSSIBLE NEXT STEPS"
     if _sel(sel, "step") and payload.get("step"):
@@ -207,6 +222,7 @@ def _next(payload: dict[str, Any], sel: list[str]) -> list[Part]:
     else:
         parts += _needs_and_commands(payload, sel)
     parts += _blocked_parts(payload, sel)
+    parts += _revisit_parts(payload, sel)
     return parts
 
 
@@ -272,6 +288,7 @@ def _situation(payload: dict[str, Any], sel: list[str]) -> list[Part]:
         parts += [TextPart(f"  • {n}") for n in payload.get("needs", [])]
     else:
         parts += _candidate_parts(nxt, sel, 1, 1)
+    parts += _revisit_parts(payload, sel)
     parts += _open_decisions(payload)
     return parts
 
@@ -435,6 +452,51 @@ def _registry(payload: dict[str, Any], sel: list[str]) -> list[Part]:
     return parts
 
 
+def _project(payload: dict[str, Any], sel: list[str]) -> list[Part]:
+    if payload.get("kind") == "list":
+        rows = [
+            [
+                TextPart(r["id"], "bold"),
+                str(r["name"]),
+                str(r["dir"]),
+                str(r["last_used"]),
+                TextPart("ok", "green") if r["link"] == "ok" else TextPart("missing", "red"),
+            ]
+            for r in payload["rows"]
+        ]
+        return [TextPart("PROJECTS", "bold"), TablePart(
+            ["Id", "Name", "Location", "Last used", "Link"], rows
+        )]
+    parts: list[Part] = [TextPart(f"ACTIVE PROJECT {payload.get('id', '-')}", "bold bright_cyan")]
+    pairs = []
+    for key, label in (("name", "name"), ("dir", "location"), ("source", "selected by")):
+        if _sel(sel, key) and payload.get(key) not in (None, "-"):
+            pairs.append((label, str(payload[key])))
+    pairs.append(("phase", str(payload.get("phase", "-"))))
+    pairs.append(("step", str(payload.get("step", "-"))))
+    if "skills" in payload:
+        pairs.append(
+            (
+                "skills",
+                f"{payload['skills']}  blocked {payload['blocked']}  unclassified "
+                f"{payload['unclassified']}  recurring pending {payload['recurring_pending']}  "
+                f"decks {payload['decks']}",
+            )
+        )
+        pairs.append(("last action", str(payload["last_action"])))
+    if _sel(sel, "census") and payload.get("census"):
+        pairs.append(("census", str(payload["census"])))
+    parts.append(KVPart(pairs))
+    if payload.get("stored_id_differs"):
+        parts.append(TextPart(
+            f"note: committed project_id {payload['stored_id_differs']} != location id — the folder wins",
+            "yellow",
+        ))
+    if not payload.get("present", True):
+        parts.append(TextPart("(no census found at this location)", "yellow"))
+    return parts
+
+
 RICH_BUILDERS: Final[dict[str, Builder]] = {
     "init": _init,
     "registry": _registry,
@@ -450,6 +512,7 @@ RICH_BUILDERS: Final[dict[str, Builder]] = {
     "lint": _lint,
     "fields": _fields,
     "config": _config,
+    "project": _project,
 }
 
 

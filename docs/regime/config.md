@@ -1,6 +1,6 @@
 # Viber Config — The Settings Chain
 
-> Owns the CLI's own configuration: the precedence chain, the five keys, the files, the env names, the `config` command family, and the internal plugin surface. The census (`viber.json`) owns skill knowledge — never settings; settings own tool behavior — never knowledge. Diagram: none yet (open item).
+> Owns the CLI's own configuration: the precedence chain, the six keys, the files, the env names, the `config` command family, and the internal plugin surface. The census (`viber.json`) owns skill knowledge — never settings; settings own tool behavior — never knowledge. Diagram: none yet (open item).
 > Shipped as `skills/viber/references/config.md`.
 
 ## 1. Overview
@@ -28,6 +28,7 @@ file it cannot parse.
 | Key | Type | Default | Layers | Why it earns the chain |
 |---|---|---|---|---|
 | `census` | path | `""` (auto-detect) | flag, env, project, user | odd layouts (insource `manager.py` split) get a config answer, not env archaeology |
+| `project` | project-id | `""` (none) | flag, env, user | resume a saved project from anywhere without retyping its path |
 | `profile` | minimal / standard / full | `standard` | flag, env, project, user | "this project always wants full" |
 | `format` | txt / json | `txt` | flag, env, project, user | agent-driven projects want json everywhere |
 | `telemetry` | bool | `true` | env, project, user | A/B the regime, CI runs that must write nothing |
@@ -49,15 +50,49 @@ config file's own directory — matching how the census itself is discovered.
 ```text
 <project-root>/.viber/.data/config.json   project layer — shared, committed-able
 <user config dir>/config.json             user layer — per machine, never shared
+<user config dir>/projects.json           the project registry — id -> location
 ```
 
 The user dir is the platform app dir (`typer.get_app_dir("viber")`) unless
 `VIBER_CONFIG_HOME` says otherwise. `VIBER_CONFIG` points the project layer at
 any explicit file (the escape hatch, and the test seam).
 
-Both files are JSON with the five keys (plus unknown keys that survive round-trips,
+Both files are JSON with the six keys (plus unknown keys that survive round-trips,
 the same `extra="allow"` doctrine as the census). No comments: the CLI is the
 writer, and `config list` is the reader.
+
+### 3.1. Multi-project data and linking
+
+One viber install can drive many projects. `viber init` (or `viber project create
+<dir>`) creates a project's `.viber/.data` census and registers it under a short
+**id** — a location fingerprint (a hash of the directory path), printed with the
+resume command and stored in the census (`project_id`) so an agent can keep it in
+its docs. It is not sensitive.
+
+Selection precedence for which project a command runs against:
+`-C <census>` (explicit file) > `--project <id>` flag > `VIBER_PROJECT` env > **the nearest enclosing
+project** (walks up from cwd to the first folder holding `.viber/.data/viber.json`) > the `project`
+user-config default (set by `viber project use <id>`). An enclosing folder beats a saved default — a
+command run from `proj/src/deep` operates on `proj` even if your default is elsewhere; pass
+`--project <id>` to override. With no enclosing project, the saved default resumes it from anywhere.
+The walk-up stops at a VCS boundary (a `.git` directory or, for a worktree/submodule, a `.git` file),
+so a checkout nested inside another never silently borrows the parent's data — init the worktree or
+submodule on its own, or point at it with `--project`/`-C`.
+
+The fingerprint is a convenience, **not a guarantee** — it is derived from the
+location, so a project whose folder moves needs re-binding:
+`viber project link <id> --to <newdir>`. `viber project list` flags a stale entry
+as `missing`; `link` repairs it (and adopts a folder whose registry entry was lost).
+`viber now <id> --details` shows a project's location, step, counts, and last action.
+
+Because the id is a function of the **path**, ordinary git activity is safe: switching branches or
+committing/checkout-ing `.viber/.data/viber.json` keeps the same folder, so the same id. The CLI
+derives the id from the resolved location, **not** from the `project_id` stored in the file — so a
+census committed from another machine/worktree (carrying a foreign `project_id`) cannot make the id
+drift; `viber now` reports the location id and flags the mismatch (`stored_id_differs`). What a branch
+*does* change is the working folder: a separate `git worktree` per branch is a separate location, so
+either init it or resume it by id — and the `.git` boundary stop keeps a nested checkout from
+silently using the parent's data.
 
 ## 4. Validation Policy — the Asymmetry, Argued
 
@@ -89,8 +124,8 @@ env prefixes — discoverable beats clever.
 ## 6. The Plugin Surface — Internal, Opt-in, Add-only
 
 The CLI is assembled through a registry seam (`cli/registry.py`): built-in command
-modules register first, command families come in as sub-apps (`config` is that
-pattern's first customer), and drop-in plugins register last, from
+modules register first, command families come in as sub-apps (`config` and `project`
+are that pattern's customers), and drop-in plugins register last, from
 `.viber/plugins/*.py` and `<user dir>/plugins/*.py`.
 
 A plugin is a plain module exporting `COMMANDS: dict[str, callable]`; handlers use

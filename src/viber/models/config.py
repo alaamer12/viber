@@ -14,6 +14,7 @@ class ViberConfig(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     census: Any = None
+    project: Any = None
     profile: Any = None
     format: Any = None
     telemetry: Any = None

@@ -73,6 +73,11 @@ def render_skill(p: dict[str, Any], sel: list[str]) -> str:
     history = p.get("history") or []
     if _selected(sel, "history") and history:
         lines += ["", "history"] + [f"- {h.get('date', '?')} {h.get('event', '')}" for h in history]
+    notes = p.get("notes") or []
+    if _selected(sel, "notes") and notes:
+        lines += ["", "notes"] + [
+            f"- {n.get('date', '?')} [{n.get('context', '?')}] {n.get('text', '')}" for n in notes
+        ]
     return "\n".join(lines)
 
 
@@ -139,6 +144,9 @@ def render_next(p: dict[str, Any], sel: list[str]) -> str:
         lines.append("")
     if _selected(sel, "blocked") and p.get("blocked"):
         lines += ["blocked:"] + [f"- {b['skill']}: {b['blockers']}" for b in p["blocked"]]
+    if _selected(sel, "revisit") and p.get("revisit"):
+        lines += ["", "REVISIT (recurring, not yet ok)"]
+        lines += [f"- {r['skill']}: {r['reason']}" for r in p["revisit"]]
     return "\n".join(lines).rstrip("\n")
 
 
@@ -226,6 +234,9 @@ def render_situation(p: dict[str, Any], sel: list[str]) -> str:
                 lines.append(f"why it exists here: {nxt['why']}")
             if nxt.get("todo"):
                 lines.append(f"do: {nxt['todo']}")
+    if _selected(sel, "revisit") and p.get("revisit"):
+        lines += ["", "REVISIT (recurring, not yet ok)"]
+        lines += [f"- {r['skill']}: {r['reason']}" for r in p["revisit"]]
     if _selected(sel, "open"):
         open_items = p.get("open") or []
         lines += ["", "open decisions"]
@@ -391,6 +402,34 @@ def render_registry(p: dict[str, Any], sel: list[str]) -> str:
     return "\n".join(lines)
 
 
+def render_project(p: dict[str, Any], sel: list[str]) -> str:
+    if p.get("kind") == "list":
+        rows = [[r["id"], r["name"], r["dir"], r["last_used"], r["link"]] for r in p["rows"]]
+        return "\n".join(
+            _table(rows, ["Id", "Name", "Location", "Last used", "Link"])
+        )
+    lines = [f"id: {p.get('id', '-')}"]
+    for key, label in (("name", "name"), ("dir", "location"), ("source", "selected by")):
+        if _selected(sel, key) and p.get(key) not in (None, "-"):
+            lines.append(f"{label}: {p[key]}")
+    lines.append(f"phase: {p.get('phase', '-')}  step: {p.get('step', '-')}")
+    if "skills" in p:
+        lines.append(
+            f"skills: {p['skills']}  blocked: {p['blocked']}  unclassified: {p['unclassified']}  "
+            f"recurring pending: {p['recurring_pending']}  decks: {p['decks']}"
+        )
+        lines.append(f"last action: {p['last_action']}")
+    if _selected(sel, "census") and p.get("census"):
+        lines.append(f"census: {p['census']}")
+    if p.get("stored_id_differs"):
+        lines.append(
+            f"note: committed project_id {p['stored_id_differs']} != location id — the folder wins"
+        )
+    if not p.get("present", True):
+        lines.append("(no census found at this location)")
+    return "\n".join(lines)
+
+
 RENDERERS: Final[dict[str, Renderer]] = {
     "init": render_init,
     "registry": render_registry,
@@ -406,6 +445,7 @@ RENDERERS: Final[dict[str, Renderer]] = {
     "lint": render_lint,
     "config": render_config,
     "fields": render_fields,
+    "project": render_project,
     "ack": render_ack,
     "ack-show": render_write_ack,
     "drift": render_drift,

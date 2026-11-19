@@ -106,6 +106,45 @@ def _todo(when: str, produces: list[str], description: str | None, doing: str = 
     return when or (description or "").split(".")[0]
 
 
+def _revisit(
+    census: Census, db: TelemetryDB | None, roster_names: set[SkillName]
+) -> list[dict[str, Any]]:
+    """Recurring skills used but never ok'd, fallen out of the current step.
+
+    They vanish from the step roster once the project advances, so the CLI keeps
+    them visible here until an ok settles them for the cycle.
+    """
+    if db is None or not db.exists():
+        return []
+    rows: list[dict[str, Any]] = []
+    for name, entry in census.skills.items():
+        if not entry.recurring or name in roster_names:
+            continue
+        stats = db.skill_stats(name)
+        if not (stats["count"] > 0 and stats["ok"] == 0):
+            continue
+        last = db.latest(name) or {}
+        outcome = last.get("outcome")
+        note = last.get("note") or ""
+        if outcome is None:
+            reason = "recurring; in progress (open)"
+        else:
+            reason = f"recurring; last {outcome}" + (f" — {note}" if note else "")
+        rows.append(
+            {
+                "skill": name,
+                "when": entry.fit.when,
+                "doing": entry.fit.doing,
+                "why": entry.fit.why,
+                "outcome": outcome,
+                "ts": last.get("ts"),
+                "note": note,
+                "reason": reason,
+            }
+        )
+    return rows
+
+
 def next_candidates(
     census: Census, db: TelemetryDB | None, count: int = 1
 ) -> dict[str, Any]:
@@ -121,6 +160,7 @@ def next_candidates(
             "needs": [],
             "commands": [],
             "previous": previous,
+            "revisit": _revisit(census, db, set()),
         }
     step_obj = next(s for s in census.lifecycle if s.step == step_name)
     blocked: list[dict[str, Any]] = []
@@ -162,6 +202,7 @@ def next_candidates(
         "needs": list(step_obj.needs),
         "commands": list(step_obj.commands),
         "previous": previous,
+        "revisit": _revisit(census, db, set(roster for roster in step_roster(census, step_name))),
     }
 
 

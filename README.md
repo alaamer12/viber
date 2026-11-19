@@ -84,11 +84,14 @@ Daily usage and the pipe patterns (JSON, `-nr`, `--out`) live in
 |---|---|---|
 | What is the situation? | `viber situation` | phase, step, roster, usage ledger, owed decisions, next |
 | What should happen next — and why? | `viber next` | unblocked skills with `do:` / `why:` lines, predecessor reasons, needs that stand without a skill |
-| What does this field mean, who writes it, its limit? | `viber fields` | 119 rows over census, frontmatter, config, telemetry, env and ledgers — from code, not prose |
+| What does this field mean, who writes it, its limit? | `viber fields` | rows over census, frontmatter, config, telemetry, env and ledgers — from code, not prose |
 | Is the census honest? | `viber lint` | referential integrity, disk drift, deck conflicts surfaced as ASK USER decisions; `--remote` adds GitHub upstream truth |
-| Who did what, when? | `viber use` / `outcome` / `stats` | SQLite invocation ledger feeding `next` patterns and the `last:` line |
+| Who did what, when? | `viber use` / `outcome` / `stats` | SQLite invocation ledger feeding `next` patterns and the `last:` line; `use a b c` records a batch |
+| What did I leave unfinished on a recurring skill? | `viber next` / `situation` (REVISIT) | recurring skills used but never `ok`'d, surfaced across steps until settled |
+| Note this for my future self | `viber note --on <skill>` / `--note` | a dated note on the census card, apart from history and the outcome note |
+| Which project am I on / work on another | `viber now` / `--project <id>` / `viber project` | a location-fingerprint id, a registry, resume and re-link a moved folder |
 
-Writes are the CLI's alone: `init`, `set`, `log`, `add-skill`, `refresh` validate at
+Writes are the CLI's alone: `init`, `set`, `log`, `note`, `add-skill`, `refresh` validate at
 the boundary, every bounded field has a cataloged cap with an identity and a
 recovery line (the Error-as-Truth doctrine, `docs/regime/limits.md`), and
 nothing is ever silently trimmed — history rolls at 100 and says so.

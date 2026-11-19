@@ -10,6 +10,7 @@ from typing import Any
 import typer
 
 from viber.cli.deps import (
+    BannerOpt,
     CensusOpt,
     ExcludeOpt,
     ForceOpt,
@@ -17,8 +18,10 @@ from viber.cli.deps import (
     Globals,
     IncludeOpt,
     NoRichOpt,
+    NoteOpt,
     OutOpt,
     ProfileOpt,
+    ProjectOpt,
     command,
 )
 from viber.core import census_ops, resolution
@@ -63,6 +66,10 @@ def skill_cmd(
     history: bool | None = typer.Option(
         None, "--history/--no-history", "-H", help="Census history entries"
     ),
+    notes: bool | None = typer.Option(
+        None, "--notes/--no-notes", help="Self-notes entries"
+    ),
+    note: NoteOpt = None,
     long_hints: bool | None = typer.Option(
         None, "--long", "-l", help="Show relation long_hint detail"
     ),
@@ -73,10 +80,15 @@ def skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Full census card for one skill: identity, fit, relations, content."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     if census_ops.entry_of(data, name) is None:
         return _fail(f"skill '{name}' not in census")
@@ -88,6 +100,10 @@ def skill_cmd(
         desc = (entry.description or "")[:100]
         print(f"{name} v{entry.version or '?'} — {desc}")
         return 0
+    if note is not None:
+        from viber.core import mutations
+
+        mutations.record_note(data, name, note, "skill", g.census_path)
     payload = census_ops.skill_payload(data, name)
     sel = g.selection_with(
         "skill",
@@ -96,6 +112,7 @@ def skill_cmd(
             "fit": relations,
             "use_cases": use_cases,
             "history": history,
+            "notes": notes,
             "long_hints": long_hints,
         },
     )
@@ -122,10 +139,15 @@ def step_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Goal, needs and resolved roster for a step (default: the current one)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     if name:
         step = next((s for s in data.lifecycle if s.step.lower() == name.lower()), None)
@@ -172,10 +194,15 @@ def next_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Possible next steps — why each, what doing it means, and the skill-less needs."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     payload = resolution.next_candidates(data, g.db(), count=count)
     if payload["step"] is None:
@@ -198,10 +225,15 @@ def deck_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Deck roster and metadata — all decks when no name is given."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     if name and name not in data.decks:
         return _fail(f"deck '{name}' not found")
@@ -220,10 +252,15 @@ def status_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Phase, current step and census counts."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     emit("status", resolution.status_payload(g.load()), g.selection_with("status"), g.target())
     return 0
 
@@ -240,10 +277,15 @@ def list_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """All skills in a table, sortable (--by) and filterable (--filter)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     payload = resolution.list_payload(g.load(), by=by, flt=flt or None, brief=brief)
     emit("list", payload, g.selection_with("list"), g.target())
     return 0
@@ -260,10 +302,15 @@ def stats_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Telemetry usage counts per skill (or one skill's history)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     if name and census_ops.entry_of(data, name) is None:
         return _fail(f"skill '{name}' not in census")
@@ -294,10 +341,15 @@ def patterns_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Most frequent skill-to-skill sequences from telemetry."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     assert g.load() is not None  # census presence validated for the uniform contract
     db = g.db()
     if not db.exists():
@@ -319,10 +371,15 @@ def situation_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """The whole situation in one call: phase, step, roster, usage, next, owed decisions."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     step_name = resolution.current_step(data)
     if step_name is None:
@@ -355,6 +412,7 @@ def situation_cmd(
         ),
         "needs": list(next(s for s in data.lifecycle if s.step == step_name).needs),
         "previous": nxt["previous"],
+        "revisit": nxt["revisit"],
         "open": [
             f"{f.subject}: {f.question}"
             for f in lint_core.run_lint(data, g.census_path)
@@ -396,12 +454,17 @@ def fields_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Explain EVERY field viber works with: census, frontmatter, config, telemetry."""
     from viber.models.fields_doc import FIELD_INDEX
 
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     counts: dict[str, int] = {}
     for d in FIELD_INDEX.values():
         grp = _group_of(d.path)
@@ -468,6 +531,32 @@ def _field_detail(doc: FieldDoc) -> dict[str, Any]:
     }
 
 
+@command
+def now_cmd(
+    project_id: str = typer.Argument(None, help="project id (omit to ask where you already are)"),
+    details: bool = typer.Option(False, "--details", "-d", help="Expand counts and last action"),
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
+    census: CensusOpt = None,
+    fmt: FormatOpt = None,
+    out: OutOpt = None,
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
+    no_rich: NoRichOpt = False,
+) -> int:
+    """Where am I — or, with `<id>`, that project's details (--details expands further)."""
+    from viber.cli.project_cmd import build_status
+
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project or project_id, banner=banner,
+    )  # fmt: skip
+    emit("project", build_status(g, details), g.selection_with("project"), g.target())
+    return 0
+
+
 COMMANDS: dict[str, Callable[..., None]] = {
     "skill": skill_cmd,
     "step": step_cmd,
@@ -480,4 +569,5 @@ COMMANDS: dict[str, Callable[..., None]] = {
     "ls": list_cmd,
     "stats": stats_cmd,
     "patterns": patterns_cmd,
+    "now": now_cmd,
 }

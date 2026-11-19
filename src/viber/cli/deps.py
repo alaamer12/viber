@@ -12,14 +12,29 @@ from typing import Annotated, Any
 
 import typer
 
+from viber.core.projects import lookup_project, touch_used
 from viber.core.settings import Flags, resolve
 from viber.data import config_store
 from viber.data.config_store import ConfigError
-from viber.data.store import CensusError, CensusUsageError, load_census, resolve_census_path
+from viber.data.store import (
+    CENSUS_NAME,
+    DEFAULT_DATA_DIR,
+    CensusError,
+    CensusUsageError,
+    load_census,
+    resolve_census_path,
+)
 from viber.data.telemetry import TelemetryDB
-from viber.models.domain import FormatKind, Profile
+from viber.models.domain import FormatKind, Profile, Source
 from viber.models.schema import Census
-from viber.output.display import PLAIN, report_error, report_warning, resolve_display
+from viber.output.display import (
+    PLAIN,
+    TextPart,
+    render_parts,
+    report_error,
+    report_warning,
+    resolve_display,
+)
 from viber.output.emit import EmitError, EmitTarget
 from viber.output.profiles import ProfileError, resolve_selection
 
@@ -50,6 +65,39 @@ NoRichOpt = Annotated[
         help="Plain output: no rich tables or color [env VIBER_RICH] [default: auto-detect]",
     ),
 ]
+NoteOpt = Annotated[
+    str | None,
+    typer.Option(
+        "--note", help="Attach a self-note to the target (stored in the census, shown on the card)"
+    ),
+]
+ProjectOpt = Annotated[
+    str | None,
+    typer.Option("--project", help="Resume a project by id (see `viber now` / `viber init`)"),
+]
+BannerOpt = Annotated[
+    bool,
+    typer.Option("--banner/--no-banner", help="Show the START/RESUME project banner"),
+]
+
+
+def _find_local_census(start: Path) -> Path | None:
+    """The nearest enclosing project's census, walking up from `start`.
+
+    Stops at a VCS boundary (a `.git` directory or, for a worktree/submodule, a
+    `.git` file): a checkout nested inside another never silently borrows the
+    parent's project data, and the search never escapes the current checkout.
+    The data check precedes the boundary check, so a project root (which holds
+    both) resolves correctly.
+    """
+    current = start.resolve()
+    for folder in (current, *current.parents):
+        found = folder / DEFAULT_DATA_DIR / CENSUS_NAME
+        if found.is_file():
+            return found
+        if (folder / ".git").exists():
+            break
+    return None
 
 
 class Globals:
@@ -66,11 +114,13 @@ class Globals:
         exclude: str | None,
         *,
         no_rich: bool = False,
+        project: str | None = None,
+        banner: bool = True,
     ) -> None:
         self.display = resolve_display(no_rich)
         loaded = config_store.load(os.environ)
         settings = resolve(
-            Flags(census, fmt, out, force, profile, include, exclude),
+            Flags(census, project, fmt, out, force, profile, include, exclude),
             os.environ,
             loaded.project,
             loaded.user,
@@ -78,13 +128,60 @@ class Globals:
         for warning in (*self.display.warnings, *loaded.warnings, *settings.warnings):
             report_warning(self.display, warning)
         self.settings = settings
-        self.census_path = resolve_census_path(settings.census)
         self.fmt = settings.format
         self.out = settings.out
         self.force = settings.force
         self.profile = settings.profile
         self.include = settings.include
         self.exclude = settings.exclude
+        self.project_id: str | None = None
+        self.project_name: str | None = None
+        self.project_dir: str | None = None
+        self.project_source: str = "cwd"
+        self.census_path = self._resolve_census(settings, banner)
+
+    def _resolve_census(self, settings: Any, banner: bool) -> Path:
+        # an explicit census file wins over everything
+        if settings.census:
+            self.project_source = "census"
+            return resolve_census_path(settings.census)
+        # an explicit --project flag / VIBER_PROJECT env wins over a local folder
+        project_is_explicit = settings.sources.get("project") in (Source.FLAG, Source.ENV)
+        if settings.project and project_is_explicit:
+            return self._use_project(settings.project, banner)
+        # otherwise prefer the project you are standing in (or under) — walk up
+        local = _find_local_census(Path.cwd())
+        if local is not None:
+            return local
+        # ...and only then fall back to the saved default project
+        if settings.project:
+            return self._use_project(settings.project, banner)
+        return resolve_census_path(None)
+
+    def _use_project(self, project_id: str, banner: bool) -> Path:
+        self.project_source = "project"
+        self.project_id = project_id
+        rec = lookup_project(os.environ, project_id)
+        if rec is None:
+            raise CensusUsageError(
+                f"unknown project id '{project_id}' — list them: `viber project list`, "
+                f"or re-bind a moved folder: `viber project link {project_id} --to <dir>`"
+            )
+        self.project_dir = rec.get("dir")
+        self.project_name = rec.get("name")
+        touch_used(os.environ, project_id)
+        if banner and self.fmt is FormatKind.TXT and self.out is None:
+            print(
+                render_parts(
+                    self.display,
+                    [TextPart(f"RESUMED {self.project_name or 'project'}", "bold bright_cyan")]
+                    + [
+                        TextPart(f"  id:  {self.project_id}"),
+                        TextPart(f"  dir: {self.project_dir}"),
+                    ],
+                )
+            )
+        return Path(self.project_dir) / DEFAULT_DATA_DIR / CENSUS_NAME
 
     def selection(self, command: str) -> list[str]:
         return resolve_selection(command, self.profile, self.include, self.exclude)

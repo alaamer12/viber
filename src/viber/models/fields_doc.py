@@ -133,6 +133,19 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         "append, eviction is announced",
         limit="history",
     ),
+    _f(
+        "notes", "list<{date,text,context}>", default="[]",
+        written="global `--note` on a command with no skill target",
+        used="project-level notes trail; the card of `.`",
+        meaning="notes attached to the project as a whole; rolling window",
+        limit="notes",
+    ),
+    _f(
+        "project_id", "str", default="\"\"", written="init / `project create`",
+        used="`now`, `--project` resume, the project banner",
+        meaning="short location fingerprint of this project's home dir (not sensitive; "
+        "record it in docs; re-bind after a move with `viber project link`)",
+    ),
     # ---------------------------------------------------- decks.*
     _f(
         "deck.name", "str", default="\"\"", written="seed/vinit",
@@ -257,6 +270,13 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="whether the project itself owns the skill files",
     ),
     _f(
+        "skill.recurring", "bool", default="false",
+        written="seed / `set <skill> recurring`",
+        used="the next/situation REVISIT pool",
+        meaning="skill is meant to be revisited as the project clarifies; once used but "
+        "never ok'd it re-surfaces cross-step until an ok settles it",
+    ),
+    _f(
         "skill.content", "{entry,references,assets,examples}", default="empty",
         written="`refresh` re-lists from disk",
         used="`skill --content` / the card's file manifest",
@@ -274,6 +294,13 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         used="the card's history section; audit trail",
         meaning="per-skill event ledger; oldest evicts past the cap, eviction announced",
         limit="history",
+    ),
+    _f(
+        "skill.notes", "list<{date,text,context}>", default="[]",
+        written="`note --on` / global `--note` on use/outcome/set/log/skill",
+        used="the card's notes section; the REVISIT reason line",
+        meaning="the agent's own notes on this skill; rolling window, eviction announced",
+        limit="notes",
     ),
     # ---------------------------------------------------- skill.fit.*
     _f(
@@ -412,6 +439,20 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         used="card history; eviction messages reference it",
         meaning="one dated sentence", limit="event",
     ),
+    _f(
+        "skill.notes[].text", "str", required=True, written="`note`/`--note`",
+        used="card notes; REVISIT reason",
+        meaning="the note itself, one dated line", limit="note",
+    ),
+    _f(
+        "skill.notes[].date", "date-str", required=True, written="CLI (today UTC)",
+        used="card notes lines", meaning="day the note was written", limit="date",
+    ),
+    _f(
+        "skill.notes[].context", "str", written="the command that recorded it",
+        used="card notes lines",
+        meaning="which command attached the note (use/outcome/set/note/...)",
+    ),
     # ---------------------------------------------------- SKILL.md frontmatter
     # What parse_frontmatter reads from each skill's header — the census's sources.
     _f(
@@ -519,6 +560,11 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="where this project's census JSON lives",
     ),
     _f(
+        "config.project", "project-id", written="`viber project use <id>` (user layer)",
+        used="Globals resolution: --project > env VIBER_PROJECT > this default > CWD",
+        meaning="the default project id to resume when no census path is given",
+    ),
+    _f(
         "config.profile", "minimal | standard | full", written="`viber config set profile <P>`",
         used="default field selection of every command (output/fields.py groups)",
         meaning="how much of each payload viber shows by default",
@@ -596,6 +642,11 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         "env.VIBER_CENSUS", "path", written="the user's shell",
         used="settings chain env layer (core/settings.py) — overrides project/user config",
         meaning="env override of the census key",
+    ),
+    _f(
+        "env.VIBER_PROJECT", "project-id", written="the user's shell",
+        used="Globals resolution env layer — resumes that project's data over cwd",
+        meaning="env override of the project key (a location-fingerprint id)",
     ),
     _f(
         "env.VIBER_PROFILE", "minimal | standard | full", written="the user's shell",

@@ -22,6 +22,11 @@ SUBAPPS: tuple[tuple[str, str, str], ...] = (
         "Viber settings — chain-aware defaults (flag > env > project > user > default)",
         "viber.cli.config_cmd",
     ),
+    (
+        "project",
+        "Multi-project — create, resume (use), re-link a moved folder, list, status",
+        "viber.cli.project_cmd",
+    ),
 )
 
 

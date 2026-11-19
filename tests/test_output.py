@@ -52,19 +52,20 @@ def test_standard_selection_order() -> None:
         "deck",
         "path",
         "owned",
+        "recurring",
         "step",
         "description",
         "use_cases",
         "fit",
         "content",
     ]
-    assert "history" not in sel and "long_hints" not in sel
+    assert "history" not in sel and "notes" not in sel and "long_hints" not in sel
 
 
 def test_minimal_and_full() -> None:
     assert "description" not in resolve_selection("skill", Profile.MINIMAL)
     full = resolve_selection("skill", Profile.FULL)
-    assert "history" in full and "long_hints" in full
+    assert "history" in full and "long_hints" in full and "notes" in full
 
 
 def test_include_unknown_suggests() -> None:

@@ -38,9 +38,8 @@ flowchart TD
             STE["steering"]
             PVC["pvc"]
             STY["styling"]
-            STU["styleup"]
             STA["states"]
-            TU["type-up"]
+            TU["typing"]
             CON["contract"]
             DOC["Project documentation"]
             GL["glossary-md"]
@@ -52,7 +51,7 @@ flowchart TD
             OPT["packages · personalize"]
 
             ST --> AR --> EF
-            EF --> DOC & STE & PVC & STY & STU & STA & TU & CON
+            EF --> DOC & STE & PVC & STY & STA & TU & CON
             DOC --> GL & CM & SY & RM & UN & AP
             DOC -.-> OPT
         end
@@ -146,7 +145,7 @@ flowchart TD
     classDef legend fill:#f8fafc,stroke:#94a3b8,color:#334155
     classDef projectphase fill:#f1f5f9,stroke:#475569,stroke-width:2px,color:#0f172a
 
-    class I,P,A,PG,PT1,PT2,ST,AR,FC,STE,PVC,STY,STU,STA,TU,CON,GL,CM,SY,RM,UN,AP mandatory
+    class I,P,A,PG,PT1,PT2,ST,AR,FC,STE,PVC,STY,STA,TU,CON,GL,CM,SY,RM,UN,AP mandatory
     class R,DN,AS,OPT,MX optional
     class GR,CT,AD,TW shared
     class START,M1,M2,M3,END milestone

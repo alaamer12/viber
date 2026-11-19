@@ -20,7 +20,7 @@ flowchart TD
 
     MEM -- "blocker clears" --> RT{{"ROUTER"}}
     RT -- "answered" --> SET
-    SET -. "points to" .-> SPEC["docs/steering · AGENTS.md"]
+    SET -. "points to" .-> SPEC["domain spec · AGENTS.md"]
 
     INIT(["vinit"]) -- "creates" --> MEM
     INIT --> SET

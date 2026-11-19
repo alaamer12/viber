@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from viber.data.telemetry import TelemetryDB
+from viber.models.schema import Census
 
 
 @pytest.fixture(autouse=True)
@@ -223,7 +224,11 @@ MINI: dict[str, Any] = {
 
 @pytest.fixture()
 def mini() -> dict[str, Any]:
-    return json.loads(json.dumps(MINI))
+    # canonicalized through the model so the round-trip guard sees the same defaults
+    # the seed carries (recurring, notes, project_id); MINI stays authored minimally.
+    return Census.model_validate(json.loads(json.dumps(MINI))).model_dump(
+        mode="json", by_alias=True
+    )
 
 
 @pytest.fixture()

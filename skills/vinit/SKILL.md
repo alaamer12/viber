@@ -38,10 +38,15 @@ Three steps, safe to repeat. The full contracts (registry format, participation 
 
 ## Step 2 — mention it in AGENTS.md
 
-Add or refresh the `## Viber` section (registry + memory pointers) — this is the activation marker. If
-`AGENTS.md` is missing, create it with only this section; `agents-md` completes it later in Phase 1.
+Add or refresh the `## Viber` section using `references/init.md` section 3: include its CLI-first
+session/resume requirement, execution-recording rules, and registry/memory pointers, not just the marker.
+Existing declarations missing the CLI obligations need the same refresh. If `AGENTS.md` is missing,
+create it with only this section; `agents-md` completes it later in Phase 1.
 
 ## Step 3 — start the flow
+
+Execute `viber situation -f json` and, when selecting the next step, `viber next -f json`. Read their
+actual results before describing project state or starting the next skill; loading `/viber` is not this check.
 
 New project → open Phase 1 (`idea-md`). Existing → mark found outputs Needs Review (presence ≠ completion),
 missing ones Not Started, name the next step, suggest fitting deck Skills. Then let the Router guide

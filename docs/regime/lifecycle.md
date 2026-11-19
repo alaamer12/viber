@@ -90,6 +90,16 @@ They come from one of the two Skill Decks and are used only when the project or 
 
 Deck Skills are never Mandatory and never expected. They are described in section 8.
 
+### 2.5. Recurring Skills
+
+A skill can be flagged **recurring** (`viber set <skill> recurring true`). This is an orthogonal marker on top of the categories above: a Mandatory skill that the agent is expected to revisit, not finish once.
+
+The pattern: a rulebook or specification skill (e.g. `agents-md`) is started early while the project is still unclear, deferred, and then forgotten — because `next` proposes only the current step's roster, so once the project advances the skill leaves the list entirely.
+
+A recurring skill that has been used but never marked `ok` stays visible in a cross-step **revisit** pool (`viber next`, `viber situation`) until an `ok` settles it. See the router's Recurring Skills section for the exact rule.
+
+Recording work is also **bulk-capable**: `viber use a b c` records several previously-done skills in one call (it validates every name first, so a typo records nothing).
+
 ---
 
 # 3. Phase One — Idea & Understanding

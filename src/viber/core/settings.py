@@ -18,6 +18,7 @@ from viber.models.domain import ConfigKey, FormatKind, Profile, Source
 
 ENV_NAMES: Final[dict[str, str]] = {
     "census": "VIBER_CENSUS",
+    "project": "VIBER_PROJECT",
     "profile": "VIBER_PROFILE",
     "format": "VIBER_FORMAT",
     "telemetry": "VIBER_TELEMETRY",
@@ -26,6 +27,7 @@ ENV_NAMES: Final[dict[str, str]] = {
 
 CHAIN: Final[dict[str, tuple[Source, ...]]] = {
     "census": (Source.FLAG, Source.ENV, Source.PROJECT, Source.USER),
+    "project": (Source.FLAG, Source.ENV, Source.USER),
     "profile": (Source.FLAG, Source.ENV, Source.PROJECT, Source.USER),
     "format": (Source.FLAG, Source.ENV, Source.PROJECT, Source.USER),
     "telemetry": (Source.ENV, Source.PROJECT, Source.USER),
@@ -34,6 +36,7 @@ CHAIN: Final[dict[str, tuple[Source, ...]]] = {
 
 DEFAULTS: Final[dict[str, Any]] = {
     "census": None,
+    "project": None,
     "profile": Profile.STANDARD,
     "format": FormatKind.TXT,
     "telemetry": True,
@@ -60,6 +63,7 @@ class Flags:
     """What typer handed the handler, sentinels intact (None = not passed)."""
 
     census: str | None = None
+    project: str | None = None
     fmt: FormatKind | None = None
     out: Path | None = None
     force: bool | None = None
@@ -71,6 +75,7 @@ class Flags:
 @dataclass(frozen=True)
 class Settings:
     census: str | None
+    project: str | None
     format: FormatKind
     out: Path | None
     force: bool
@@ -104,6 +109,9 @@ def _coerce(key: str, raw: Any, where: str, warnings: list[str]) -> Any:
     if key == "census":
         text = str(raw).strip()
         return text or None
+    if key == "project":
+        text = str(raw).strip()
+        return text or None
     return raw
 
 
@@ -122,6 +130,7 @@ def resolve(
 
     flag_values: dict[str, Any] = {
         "census": flags.census,
+        "project": flags.project,
         "profile": flags.profile,
         "format": flags.fmt,
     }
@@ -157,6 +166,7 @@ def resolve(
 
     return Settings(
         census=values["census"],
+        project=values["project"],
         format=values["format"],
         out=flags.out,
         force=flags.force if flags.force is not None else False,

@@ -16,6 +16,24 @@ It should feel like a knowledgeable project guide working alongside the user whi
 
 The Router should make the right information and skills visible at the right time, while leaving execution decisions to the user and agent.
 
+### CLI-first operation
+
+Execute `viber situation -f json` on session entry or context resume before making census-backed claims.
+When choosing a next action, run `viber next -f json` and use the returned reasons and blockers. Reading
+this reference or loading the Viber skill does not perform either operation; remembered output is not a
+fresh check. The required operating loop is in `../SKILL.md` under **Required CLI loop**.
+
+The skill explains policy; the CLI reads and writes the census and execution ledger. A metadata query
+such as `viber skill <name>` does not execute that skill. Select the actual task skill by fit across the
+registered deck, not because it belongs to Viber; never substitute repeated Viber loading for task work.
+Respect a user-chosen task instead of turning every request into a new lifecycle recommendation.
+
+Record real census-registered skill invocations through `viber use` and `viber outcome`, respecting
+telemetry settings. Update census facts through supported CLI writes and run `viber lint` after changes.
+If a command fails, report the failure and keep dependent claims unverified; do not replace the CLI with
+manual JSON edits, an invented state store, or fabricated results. Reuse fresh reads within a task;
+re-read after relevant state changes, not on every message.
+
 ---
 
 ## 2. Responsibilities
@@ -180,7 +198,7 @@ The Router should treat project lifecycle information as follows:
 - **Viber section of the project's `AGENTS.md`:** What this project adds to the fixed lifecycle — attached deck Skills and project Skills, with their lifecycle point and status. Written by `adapt`.
 - **Viber registry (`<project-root>/.viber/registry.md`):** The index of every registered Skill — Viber Skills and the user's deck, including any extension repositories — written by `/viber init`. The Router reads it to find candidate Skills for a need, and each Skill's `Viber` participation (`part` / `separated` / `excluded`).
 - **Viber memory (`<project-root>/.viber/memory.md`, `settled.md`, `learnt.md`):** The project's open questions, settled answers, and learned facts (see `memory.md`). The Router reads `memory.md` for outstanding decisions and blockers, `settled.md` to avoid re-suggesting settled decisions, and `learnt.md` for constraints that shape guidance.
-- **Viber supervision (`supervision.md`):** Whether the project's `AGENTS.md` declares Viber (activation), and which Skills participate (the registry's `Viber` column). When active, the Router applies the rerouting rule to participating Skills' relocatable output (`.viber/<normal-path>`); code and root-files stay.
+- **Viber supervision (`supervision.md`):** Whether the project's `AGENTS.md` declares Viber (activation), and which Skills participate (the registry's `Viber` column). When active, the Router decides information ownership first (`supervision.md` 5.0): domain content stays in its owning Skill's canonical artifact and the ledger points to it (pointer, not copy); only ownerless relocatable output is rerouted to `.viber/<normal-path>`. Code, root-files, and a Skill's anchored working directory (e.g. a documentation Skill's specification tree) stay.
 - **Skill Decks:** The Skills available outside the lifecycle, discovered as the Project Lifecycle document describes.
 - **Actual project files and execution evidence:** Evidence of what has happened.
 - **Router state:** Current progress tracking and recommendations.
@@ -250,6 +268,18 @@ For example, `prototype` may be used to create an initial draft and later refine
 The Router should preserve the latest status while retaining enough history to understand previous executions.
 
 A repeated execution should not automatically erase the fact that the skill was previously completed.
+
+### 4.4. Recurring Skills
+
+A skill marked `recurring` (`viber set <skill> recurring true`, or in the seed) is meant to be
+revisited, not finished once — like a rulebook/spec skill started early and left half-written.
+
+Because `next` draws candidates from the **current** step only, such a skill vanishes once the
+project advances past its step. To stop it being forgotten, the CLI keeps a cross-step **revisit**
+pool (in `next` and `situation`): a recurring skill that has been invoked but never `ok`'d, and is
+no longer in the current roster, stays visible with its last outcome and note as the reason.
+`viber outcome <skill> ok` settles it for the cycle. The marker keeps unfinished work visible; it
+never forces a re-run.
 
 ---
 
@@ -456,9 +486,11 @@ It should maintain a project-level workflow state containing information such as
 - Open workflow issues.
 - Previous recommendations and whether they were accepted or dismissed.
 
-The state lives in the project's `.viber` directory (`<project-root>/.viber/`), beside the registry and the
-memory files, so all of the project's Viber state is in one transparent place. The exact storage format should
-be chosen based on the surrounding project tooling.
+The existing census and execution ledger are `.viber/.data/viber.json` and
+`.viber/.data/telemetry.db`, accessed through the `viber` CLI. Do not choose a replacement format or create
+another progress database. Not every status listed above is a supported CLI field: use `viber fields`
+and command help to check coverage, retain other evidence in its authoritative project documents, and
+leave unverified statuses unknown. The Markdown registry and memory files remain separate artifacts.
 
 The Router also reads the project's memory files (`memory.md`): `memory.md` supplies the outstanding decisions
 and blockers it tracks, and a deferred question is surfaced when its blocker clears. The Router reads memory;
@@ -497,7 +529,7 @@ The Router is a guidance and coordination layer, not an execution engine.
 - Maintain workflow state.
 - Adapt to changes in project direction.
 - Read each project's Viber version from its `AGENTS.md`.
-- Apply Viber supervision when active: reroute participating Skills' relocatable output to `.viber/<normal-path>`, leaving code and root-files untouched (see `supervision.md`).
+- Apply Viber supervision when active: decide information ownership first (`supervision.md` 5.0) — domain content stays with its owning Skill and the ledger points to it; reroute only ownerless relocatable output to `.viber/<normal-path>`, leaving code, root-files, and anchored working directories untouched.
 
 ### The Router SHOULD NOT:
 

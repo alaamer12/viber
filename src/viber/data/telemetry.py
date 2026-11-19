@@ -85,6 +85,18 @@ class TelemetryDB:
             return None
         return {"skill": row[0], "ts": row[1], "outcome": row[2], "step": row[3]}
 
+    def latest(self, skill: str) -> dict[str, object] | None:
+        """The newest invocation of skill (open or closed) — for the revisit reason."""
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT ts, outcome, note, step FROM invocations"
+                " WHERE skill=? ORDER BY id DESC LIMIT 1",
+                (skill,),
+            ).fetchone()
+        if row is None:
+            return None
+        return {"ts": row[0], "outcome": row[1], "note": row[2], "step": row[3]}
+
     def skill_stats(self, skill: str) -> dict[str, object]:
         with self.connect() as conn:
             row = conn.execute(

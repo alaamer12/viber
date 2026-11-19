@@ -91,6 +91,10 @@ _RAW: Final[tuple[Limit, ...]] = (
         "eviction itself is automatic and announced",
     ),
     _l(
+        "notes", _I, 100, "self-notes are a working ledger, not an archive — rolling window",
+        "prune settled notes or /vcompact them; eviction is automatic and announced",
+    ),
+    _l(
         "blockers", _I, 20, "blocked means a handful of named walls",
         "consolidate blockers: viber set <skill> blockers",
     ),
@@ -119,6 +123,10 @@ _RAW: Final[tuple[Limit, ...]] = (
     # history record parts
     _l("event", _C, 300, "a history line is one dated sentence", "summarize the event line"),
     _l("date", _C, 40, "dates are YYYY-MM-DD, not prose", "use the ISO day form"),
+    _l(
+        "note", _C, 300, "a self-note is one dated line for the agent's own future self",
+        "shorten the note; split concerns across separate notes",
+    ),
     # list-item strings — distinct fields, distinct violations (Error as Truth)
     _l(
         "blocker", _C, 300, "one blocker names one wall, in a line",
@@ -200,11 +208,13 @@ def guard_items(field: str, values: Sequence[object]) -> None:
         raise ValueError(lim.message(len(values)))
 
 
-def append_history(target: list[dict[str, str]], record: dict[str, str]) -> int:
+def append_history(
+    target: list[dict[str, str]], record: dict[str, str], limit: str = "history"
+) -> int:
     """Rolling ledger: append, evict oldest past the cap, return how many evicted.
     Callers MUST mention eviction in the ack — nothing here is silent."""
     target.append(record)
-    evicted = max(0, len(target) - LIMITS["history"].cap)
+    evicted = max(0, len(target) - LIMITS[limit].cap)
     if evicted:
         del target[:evicted]
     return evicted

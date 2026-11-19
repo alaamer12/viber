@@ -113,7 +113,17 @@ Per-project data lives at `.viber/.data/`:
 |---|---|
 | `viber.json` | Census: every skill's version, description, content paths, fit, blockers, history |
 | `telemetry.db` | SQLite: invocations, outcomes, patterns. Feeds `stats`, `patterns`, smarter `next` |
-| `config.json` | Settings: the five chain keys (census, profile, format, telemetry, plugins) — see `docs/regime/config.md` |
+| `config.json` | Settings: the six chain keys (census, project, profile, format, telemetry, plugins) — see `docs/regime/config.md` |
+
+Two skill fields extend the lifecycle beyond the one-shot step model: `recurring` (a skill meant to
+be revisited — `next`/`situation` keep one that was used but never `ok`'d in a cross-step **REVISIT**
+pool once it falls out of the current step, so deferred work isn't forgotten), and `notes` (a capped
+self-note ledger on the card, written by `viber note --on <skill>` or the global `--note` flag, kept
+apart from machine `history`). `viber use a b c` records several invocations at once. Multi-project
+data hangs off one census path: `viber init` mints a location-fingerprint `project_id` (stored in the
+census) and records id→folder in the user-level `projects.json`; `viber --project <id> <cmd>` resumes
+it, `viber project link <id> --to <dir>` re-binds a moved folder, `viber project list` flags stale
+links, and `viber now <id> --details` reports location, step, counts and last action.
 
 Each skill's `fit` carries its position in the web of work: `after`, `before` and `with` are lists of
 relation objects — `{"skill": "<name>", "hint": "<why this edge exists, one line>",

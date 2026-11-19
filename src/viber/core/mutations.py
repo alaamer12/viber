@@ -89,6 +89,10 @@ def set_field(census: Census, target: str, field: SetField, value: str, census_p
             raise CensusUsageError(
                 f"type must be one of {', '.join(t.value for t in SkillType)}"
             ) from None
+    elif field is SetField.RECURRING:
+        if value not in {"true", "false"}:
+            raise CensusUsageError("recurring must be one of true|false")
+        entry.recurring = value == "true"
     elif field is SetField.USE_CASES:
         import json
 
@@ -151,6 +155,20 @@ def log_event(census: Census, target: str, event: str, census_path: Any) -> str:
         evicted = append_history(entry.history, record)
     save_census(census_path, census)
     return f"logged: {event}{_roll_note(evicted)}"
+
+
+def record_note(census: Census, target: str, text: str, context: str, census_path: Any) -> str:
+    guard_chars("note", text)
+    record = {"date": today(), "text": text, "context": context}
+    if target == ".":
+        evicted = append_history(census.notes, record, limit="notes")
+    else:
+        entry = entry_of(census, target)
+        if entry is None:
+            raise KeyError(f"skill '{target}' not in census")
+        evicted = append_history(entry.notes, record, limit="notes")
+    save_census(census_path, census)
+    return f"noted ({context}): {text}{_roll_note(evicted)}"
 
 
 def add_skill(

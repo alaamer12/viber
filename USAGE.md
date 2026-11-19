@@ -55,13 +55,23 @@ viber next                 # next unblocked skills — each with do:, why:, and 
 viber next -n 3            # cap the candidate list
 viber status               # phase, current step, counts — the minimal heartbeat
 viber use steering         # record "I am doing steering now" (feeds last:/patterns)
+viber use idea-md reveal steering   # bulk: record several previously-done skills at once
+viber use agents-md --note "skeleton only"   # invoke and attach a self-note in one call
 viber outcome steering ok  # close it — optional free-text note as a third argument
+viber note --on agents-md "add REACH fence after Foundation"   # a note without running the skill
 viber lint                 # census audit; exit 1 with findings, conflicts surface as ASK USER decisions
 viber lint --remote        # + compare deck clones against their configured GitHub upstreams (network)
+viber now                  # which project you are on, its location and step
 ```
 
 The golden pattern for an agent session: `situation` to orient, act, `use` +
 `outcome` to keep the ledger honest, `lint` before declaring done.
+
+When a `recurring` skill (e.g. `agents-md`) has been started but never marked `ok`, `next` and
+`situation` keep it visible in a **REVISIT** pool even after the project advances past its step —
+the reminder that unfinished recurring work was otherwise forgotten. Recording `outcome … ok` clears
+it. To work on a different project from anywhere: `viber --project <id> <cmd>`, or
+`viber project use <id>` to make it the default (see `docs/commands/project.md`).
 
 ## 2. Reading the census
 
@@ -76,9 +86,10 @@ viber list --by type                 # whole roster sorted; also --by step|deck|
 viber list -b                        # compact name+version table
 ```
 
-Writing goes through the same doors only via the write commands (`init`, `set`, `log`,
-`add-skill`, `remove-skill`, `refresh`) — the CLI is the sole writer of the
-census; hand-editing `viber.json` is the forbidden cure for every ailment.
+Writing goes through the same doors only via the write commands (`init`, `set`, `log`, `note`,
+`add-skill`, `remove-skill`, `refresh`, and the `project` sub-app) — the CLI is the sole writer of
+the census, the registry, and the project data; hand-editing `viber.json` is the forbidden cure for
+every ailment.
 
 ## 3. `fields` — the self-documenting surface
 
@@ -171,7 +182,7 @@ is plain; color exists only where a human is looking.
 ## 7. Config the long way once
 
 ```bash
-viber config list                        # all five chain keys with value, source layer, default
+viber config list                        # all six chain keys with value, source layer, default
 viber config get profile                 # one key, traceable
 viber config set profile full            # project layer: everyone sharing the repo gets full payloads
 viber config set format json -u          # user layer: my machine is a machine
@@ -183,7 +194,23 @@ Precedence is `flag > env (VIBER_*) > project config > user config > default`;
 `viber fields -G config` and [docs/regime/config.md](docs/regime/config.md)
 own the details.
 
-## 8. Notes from real terminals
+## 8. Cross-cutting flags & resume
+
+```bash
+viber use idea-md --note "first pass only"   # attach a self-note while running a skill
+viber note --on agents-md "add REACH fence"  # a note with NO skill run
+viber skill agents-md --notes                # show the notes ledger on the card
+viber next -n 3 --project <id>               # resume that project for this call
+viber project use <id>                       # make it the default (local folder still wins)
+viber now <id> --details                     # that project: location, step, counts, last action
+viber project link <id> --to <newdir>        # a moved folder: re-bind its id
+```
+
+`--note` and `--project` are accepted across the command set; `--details` on `now`/`project status`;
+`--notes` on `skill`. `--banner`/`--no-banner` toggles the project START/RESUME/LINK banners (text
+only — `-f json` never carries them, so it stays clean for piping).
+
+## 9. Notes from real terminals
 
 - **`| head` on Windows**: closing the pipe early can print
   `OSError: [Errno 22]` after the output — a Python-on-Windows artifact of the
@@ -193,10 +220,12 @@ own the details.
 - **rich tables at 80 columns wrap** — long rows fold. For reading: widen
   (`COLUMNS=120`); for tooling: `-f json` or `-nr`. Never parse wrapped boxes.
 
-## 9. Reference points
+## 10. Reference points
 
 - [README.md](README.md) — what Viber is and how to install it
 - [docs/regime/display.md](docs/regime/display.md) — the two-axis display doctrine
 - [docs/regime/limits.md](docs/regime/limits.md) — Error-as-Truth boundary model
+- [docs/commands/project.md](docs/commands/project.md) — multi-project, resume, linking, details
+- [docs/commands/note.md](docs/commands/note.md) — the `--note` flag and `viber note`
 - [docs/regime/config.md](docs/regime/config.md) — the settings chain
 - `viber fields` — live answer for every artifact field and its limit

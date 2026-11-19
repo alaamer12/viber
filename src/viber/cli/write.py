@@ -7,6 +7,7 @@ from typing import Any
 import typer
 
 from viber.cli.deps import (
+    BannerOpt,
     CensusOpt,
     ExcludeOpt,
     ForceOpt,
@@ -14,8 +15,10 @@ from viber.cli.deps import (
     Globals,
     IncludeOpt,
     NoRichOpt,
+    NoteOpt,
     OutOpt,
     ProfileOpt,
+    ProjectOpt,
     command,
 )
 from viber.core import lint as lint_core
@@ -38,6 +41,7 @@ def set_cmd(
     field: SetField,
     value: str,
     show: bool = typer.Option(False, "--show/--no-show", "-s", help="Echo the updated record"),
+    note: NoteOpt = None,
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -45,12 +49,19 @@ def set_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Write one census field (caps and meanings: viber fields). set <skill> <field> <value>."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     message = mutations.set_field(data, skill, field, value, g.census_path)
+    if note is not None:
+        message += " | " + mutations.record_note(data, skill, note, "set", g.census_path)
     extra = None
     if show and skill != ".":
         from viber.core.census_ops import skill_payload
@@ -64,6 +75,7 @@ def set_cmd(
 def log_cmd(
     skill: str,
     event: str,
+    note: NoteOpt = None,
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -71,12 +83,47 @@ def log_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Append a dated event to a skill's history (rolling at cap — viber fields)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
-    _ack(g, mutations.log_event(data, skill, event, g.census_path))
+    message = mutations.log_event(data, skill, event, g.census_path)
+    if note is not None:
+        message += " | " + mutations.record_note(data, skill, note, "log", g.census_path)
+    _ack(g, message)
+    return 0
+
+
+@command
+def note_cmd(
+    text: str = typer.Argument(help="the self-note to record"),
+    on: str = typer.Option(
+        ..., "--on", help="target skill, or '.' for the project (no skill is run)"
+    ),
+    census: CensusOpt = None,
+    fmt: FormatOpt = None,
+    out: OutOpt = None,
+    force: ForceOpt = None,
+    profile: ProfileOpt = None,
+    include: IncludeOpt = None,
+    exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
+    no_rich: NoRichOpt = False,
+) -> int:
+    """Record a self-note without running any skill. viber note --on <skill> \"text\"."""
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
+    data = g.load()
+    _ack(g, mutations.record_note(data, on, text, "note", g.census_path))
     return 0
 
 
@@ -95,10 +142,15 @@ def add_skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Register a new skill: deck, path, served steps, type, use-cases (caps: viber fields)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     steps = [s.strip() for s in serves.split(",") if s.strip()]
     for s in steps:
@@ -124,10 +176,15 @@ def remove_skill_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Drop a skill from the census (--dry-run previews the fallout)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     _ack(g, mutations.remove_skill(data, name, g.census_path, dry=dry_run))
     return 0
@@ -147,10 +204,15 @@ def refresh_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Re-read a skill's frontmatter and content tree from disk (or --all)."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     if not name and not everything:
         raise ValueError("give a skill name or --all")
@@ -192,10 +254,15 @@ def lint_cmd(
     profile: ProfileOpt = None,
     include: IncludeOpt = None,
     exclude: ExcludeOpt = None,
+    project: ProjectOpt = None,
+    banner: BannerOpt = True,
     no_rich: NoRichOpt = False,
 ) -> int:
     """Audit the census; deck conflicts surface as ASK USER decisions."""
-    g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    g = Globals(
+        census, fmt, out, force, profile, include, exclude,
+        no_rich=no_rich, project=project, banner=banner,
+    )  # fmt: skip
     data = g.load()
     all_findings = lint_core.run_lint(data, g.census_path, remote=remote)
     findings = all_findings
@@ -229,5 +296,6 @@ COMMANDS: dict[str, Callable[..., None]] = {
     "remove-skill": remove_skill_cmd,
     "rm-skill": remove_skill_cmd,
     "refresh": refresh_cmd,
+    "note": note_cmd,
     "lint": lint_cmd,
 }

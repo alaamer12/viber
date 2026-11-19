@@ -25,7 +25,7 @@ Both are the designer's failure, not the agent's.
 
 | Moment | What happens | Why this shape |
 |---|---|---|
-| **Write** (`set`, `add-skill`, `log`, `refresh`) | hard reject, exit 2, cataloged message: identity, cap, got, recovery command | the agent attempting the violation is present — tell them exactly what to do instead |
+| **Write** (`set`, `add-skill`, `log`, `note`, `refresh`) | hard reject, exit 2, cataloged message: identity, cap, got, recovery command | the agent attempting the violation is present — tell them exactly what to do instead |
 | **Write to a rolling ledger** (`history`) | never rejects: appends, evicts oldest past the cap, and **acks the eviction** in the response line | history is a ledger, and blocking a routine `refresh` because a skill has a rich past would punish honesty; silent trimming would lie — so it trims *and says so* |
 | **Load** (census already containing violations — only a hand-edit, itself forbidden, produces this) | file stays readable; every over-cap becomes a lint **error** with identity + got + fix | a hard-fail at load would brick every command, and the doctrine forbids hand-editing the cure — that is a lockout, the anti-pattern this doc exists to avoid |
 

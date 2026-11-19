@@ -116,8 +116,8 @@ accumulating at the folder root):
   `artifacts/parity/<date>-<task>/`, `artifacts/audits/`.
 - **Traceable.** Every artifact names its producer and run — subfolder for the what, date or task slug in the
   filename for the when — so an artifact can be followed back to the command and code that produced it.
-- **Nothing durable lives here.** A finding from an audit is knowledge: it is written up into `.viber`
-  (steering doc, decision note, or `settled.md`); the raw file stays in `artifacts/` only until the next
+- **Nothing durable lives here.** A finding from an audit is knowledge: it is written up into its proper home
+  (a domain Skill's doc, a decision note, or `settled.md`); the raw file stays in `artifacts/` only until the next
   purge. Anything that must survive deletion graduates first.
 
 ### 3.6. `scratch/` — the agent's workspace
@@ -136,8 +136,10 @@ Inside it the agent may do anything, no permission needed, because nothing there
 ### 3.7. `.viber/` — the knowledge umbrella
 
 Everything else the project knows: the registry, the memory files, the flow definitions (`.viber/flow/`), and
-every participating Skill's relocatable output — steering docs, features, plans, prototypes
-(`supervision.md`, `memory.md`). Committed: that is the transparency the user chose.
+every participating Skill's **ownerless** relocatable output — prototypes, plan notes, flows
+(`supervision.md`, `memory.md`). Domain-owned artifacts stay at their owning Skill's canonical path
+(a documentation Skill's specification tree, feature docs, and reference schemas); the ledger points to them rather than
+hoarding them (`supervision.md` 5.0). Committed: that is the transparency the user chose.
 
 The umbrella also absorbs **per-tool and per-skill state directories**. A project that does not use Viber
 drifts toward root clutter — every skill that keeps state drops its own dot-folder at the root (an `/iwts`
@@ -159,7 +161,8 @@ The root stays reserved for root-files, code, and the layout folders — nothing
 | an operation or task the project runs — any verb, script file or task-runner definition | `scripts/` | committed |
 | produced by running something, useful to look at, useless to commit | `artifacts/<producer>/` | ignored |
 | the agent's temporary mess | `scratch/<task>/` | ignored |
-| knowledge: spec, decision, plan, prototype, prototype notes, memory | `.viber/…` | committed |
+| domain-owned knowledge: spec, schema, feature doc, glossary, architecture | its owning Skill's canonical path (e.g. a documentation Skill's specification tree or feature docs) | committed |
+| ownerless knowledge: plan, prototype, prototype notes, memory, decision provenance | `.viber/…` | committed |
 
 Two questions settle almost any case: *what is this file for?* (the table above) and *does it survive a
 purge?* (if no → `artifacts/` or `scratch/`).
@@ -188,22 +191,24 @@ scratch/
 
 ## 6. Relationship to Supervision
 
-`supervision.md` reroutes participating Skills' **relocatable knowledge** under `.viber/`. The layout refines
-that rule: some relocatable outputs already have a canonical home **outside** `.viber`, and they go there
-instead.
+`supervision.md` reroutes participating Skills' **ownerless relocatable knowledge** under `.viber/`. The layout
+refines that rule: some relocatable outputs already have a canonical home **outside** `.viber` — a layout home,
+or a domain Skill's anchored working directory — and they go there instead. Ownership is decided first
+(`supervision.md` 5.0): domain content stays with its Skill, the ledger points to it.
 
 | A participating Skill produces… | It lands in |
 |---|---|
-| documentation, specs, decisions, plans, prototypes | `.viber/<normal-path>` (the umbrella) |
+| domain-owned specs, schemas, feature docs | the owning Skill's anchored path (its specification tree, feature docs, and reference schemas) |
+| ownerless documentation, plans, prototypes | `.viber/<normal-path>` (the umbrella) |
 | run output — screenshots, logs, builds, verdicts | `artifacts/<producer>/` |
 | temporary agent work — fixtures, spikes, drafts | `scratch/<task>/` |
 | a utility or operation | `tools/` · `scripts/` |
 | source code | the code tree |
 | a root-file | the project root |
 
-The umbrella gathers **knowledge**; the layout keeps *output* and *mess* in their visible, disposable places.
-Knowledge about an artifact (what was found, what was decided) still goes under `.viber` — the artifact itself
-does not.
+The umbrella gathers **ownerless knowledge**; the layout keeps *output* and *mess* in their visible, disposable
+places, and domain Skills keep their anchored trees. Knowledge about an artifact (what was found, what was
+decided) still goes under `.viber` — the artifact itself does not.
 
 ---
 

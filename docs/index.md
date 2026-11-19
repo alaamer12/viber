@@ -30,6 +30,8 @@ Local index: [commands/index.md](commands/index.md)
 | `commands/init.md` | `vinit` — the entry command spec |
 | `commands/compact.md` | `vcompact` — the compaction command spec |
 | `commands/flow.md` | `vflow` — the task-scale flow command spec |
+| `commands/project.md` | `viber project …` / `viber now` — multi-project data, resume, linking, details |
+| `commands/note.md` | `viber note --on` / global `--note` — the agent's self-notes on the census |
 
 ## Bug reports
 

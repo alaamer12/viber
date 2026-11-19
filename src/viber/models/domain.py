@@ -54,6 +54,7 @@ class SetField(StrEnum):
     PATH = "path"
     DOING = "doing"
     WHY = "why"
+    RECURRING = "recurring"
 
 
 class Outcome(StrEnum):
@@ -72,6 +73,7 @@ class Source(StrEnum):
 
 class ConfigKey(StrEnum):
     CENSUS = "census"
+    PROJECT = "project"
     PROFILE = "profile"
     FORMAT = "format"
     TELEMETRY = "telemetry"

@@ -83,6 +83,7 @@ class TestListPath:
         rows = json.loads(r.output)["keys"]
         assert {row["key"] for row in rows} == {
             "census",
+            "project",
             "profile",
             "format",
             "telemetry",

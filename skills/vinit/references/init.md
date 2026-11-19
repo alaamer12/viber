@@ -186,6 +186,14 @@ Skills' relocatable output is rerouted under `.viber`.
 ```markdown
 ## Viber
 
+- At session start and after context resume, execute `viber situation -f json` from the project root
+  before substantive work. The Viber skill supplies instructions; it never replaces running the CLI.
+- Use `viber next -f json` when choosing a next step. Perform the actual task with the fitting skill,
+  not repeated Viber loading. Do not override an explicit user task just to follow a recommendation.
+- Record actual census-registered skill work with `viber use` / `viber outcome`, respecting telemetry
+  settings. Write census JSON and telemetry only through the CLI; run `viber lint` after census changes.
+- If the CLI is unavailable or fails, report the failure and mark dependent state unverified. Never
+  fabricate CLI results, hand-edit its data, or recreate an existing census to bypass the problem.
 - This project follows Viber. The registry of every registered Skill (Viber and <USERNAME>'s Deck) is at
   `.viber/registry.md` in this project. Read it before suggesting or choosing a Skill.
 - The project's conversational memory is at `.viber/memory.md` (open questions), `.viber/settled.md`
@@ -221,7 +229,10 @@ Using the registry, `init` can also point out Skills from the user's deck that f
 
 ### 4.4. Starting the Step
 
-Running `/viber init` is the user's go-ahead to begin. `init` shows where the project stands and which step comes next, then starts that step. From that point on the Router guides the work, as described in the Router document.
+Running `/viber init` is the user's go-ahead to begin. Execute `viber situation -f json` and
+`viber next -f json`, read the actual results, then show where the project stands and start the agreed
+step. Loading the Viber skill does not perform those queries. From that point on, the Router follows
+the CLI-first operating loop rather than relying on this initialization snapshot forever.
 
 ---
 

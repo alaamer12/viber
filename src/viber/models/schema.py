@@ -55,9 +55,11 @@ class SkillEntry(_Model):
     deck: str | None = None
     path: str | None = None
     owned: bool = False
+    recurring: bool = False
     content: Content = Field(default_factory=Content)
     fit: Fit = Field(default_factory=Fit)
     history: list[dict[str, Any]] = Field(default_factory=list)
+    notes: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class Deck(_Model):
@@ -89,6 +91,8 @@ class Census(_Model):
     skills: dict[str, SkillEntry] = Field(default_factory=dict)
     unclassified: list[Any] = Field(default_factory=list)
     history: list[dict[str, Any]] = Field(default_factory=list)
+    notes: list[dict[str, Any]] = Field(default_factory=list)
+    project_id: str = ""
 
     @model_validator(mode="before")
     @classmethod

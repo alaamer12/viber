@@ -20,6 +20,7 @@ EXPECTED = sorted(
         "patterns",
         "set",
         "log",
+        "note",
         "add-skill",
         "add-s",
         "remove-skill",
@@ -30,6 +31,8 @@ EXPECTED = sorted(
         "outcome",
         "config",
         "init",
+        "now",
+        "project",
         "registry",
     ]
 )

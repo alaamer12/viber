@@ -1,11 +1,13 @@
 from dataclasses import asdict
 from importlib.resources import files
+import os
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
 from viber.cli.deps import (
+    BannerOpt,
     CensusOpt,
     ExcludeOpt,
     ForceOpt,
@@ -17,10 +19,12 @@ from viber.cli.deps import (
     ProfileOpt,
     command,
 )
-from viber.core import bootstrap
+from viber.core import bootstrap, projects
 from viber.core.lint import summarize
 from viber.data.skill_registry import conflicting_sources, scan_skills
 from viber.data.store import CENSUS_NAME, DEFAULT_DATA_DIR, CensusError
+from viber.models.domain import FormatKind
+from viber.output.display import TextPart, render_parts
 from viber.output.emit import emit
 
 SkillsRootsOpt = Annotated[
@@ -44,9 +48,76 @@ def _protect_output(g: Globals, protected: list[Path]) -> None:
         raise CensusError(f"report output must be a file: {g.out}")
 
 
+def init_at(
+    target: Path,
+    skills_root: list[Path],
+    fmt: FormatOpt,
+    out: OutOpt,
+    force: ForceOpt,
+    profile: ProfileOpt,
+    include: IncludeOpt,
+    exclude: ExcludeOpt,
+    no_rich: bool,
+    banner: bool,
+) -> int:
+    """Create a project census at `target`, register a fingerprint id, emit + banner."""
+    g = Globals(None, fmt, out, force, profile, include, exclude, no_rich=no_rich)
+    selection = g.selection("init")
+    if target.exists() or target.is_symlink():
+        raise CensusError(f"refusing to overwrite census: {target}")
+    seed, source = bootstrap.load_seed()
+    protected = [target, *([source] if source else [])]
+    resource = files("viber.data").joinpath("seed.json")
+    if isinstance(resource, Path):
+        protected.append(resource)
+    _protect_output(g, protected)
+    data, findings = bootstrap.prepare_census(seed, source, skills_root or [], target)
+    failed = bootstrap.has_errors(findings)
+    project_dir = (
+        target.parent.parent.parent if target.parent.name == ".data" else target.parent
+    )
+    pid = projects.project_id(project_dir)
+    data.project_id = pid
+    if not failed:
+        bootstrap.create_census(target, data)
+        projects.register_project(os.environ, pid, project_dir, data.name)
+    payload = {
+        "census": target.resolve().as_posix(),
+        "project_id": pid,
+        "created": not failed,
+        "resolved": sum(entry.path is not None for entry in data.skills.values()),
+        "summary": summarize(findings),
+        "findings": [
+            {**asdict(f), "severity": f.severity.value, "ask_user": f.question is not None}
+            for f in findings
+        ],
+    }
+    emit("init", payload, selection, g.target())
+    if not failed and banner and g.fmt is FormatKind.TXT and g.out is None:
+        print(
+            render_parts(
+                g.display,
+                [TextPart("PROJECT STARTED", "bold bright_green")]
+                + [
+                    TextPart(f"  id:    {pid}"),
+                    TextPart(f"  name:  {data.name}"),
+                    TextPart(f"  dir:   {project_dir.as_posix()}"),
+                    TextPart(f"  resume from anywhere:  viber --project {pid} <command>"),
+                    TextPart("  record the id in AGENTS.md — it is not sensitive."),
+                    TextPart(
+                        "  (the id is a location fingerprint; if this folder moves, re-bind "
+                        "it with `viber project link`)"
+                    ),
+                ],
+            )
+        )
+    return 1 if failed else 0
+
+
 @command
 def init_cmd(
     skills_root: SkillsRootsOpt = None,
+    banner: BannerOpt = True,
     census: CensusOpt = None,
     fmt: FormatOpt = None,
     out: OutOpt = None,
@@ -59,34 +130,13 @@ def init_cmd(
     """Create a project census from the packaged seed; never replace existing project data."""
     g = Globals(census, fmt, out, force, profile, include, exclude, no_rich=no_rich)
     target = (
-        Path(g.settings.census) if g.settings.census
+        Path(g.settings.census)
+        if g.settings.census
         else Path.cwd() / DEFAULT_DATA_DIR / CENSUS_NAME
     )
-    selection = g.selection("init")
-    if target.exists() or target.is_symlink():
-        raise CensusError(f"refusing to overwrite census: {target}")
-    seed, source = bootstrap.load_seed()
-    protected = [target, *([source] if source else [])]
-    resource = files("viber.data").joinpath("seed.json")
-    if isinstance(resource, Path):
-        protected.append(resource)
-    _protect_output(g, protected)
-    data, findings = bootstrap.prepare_census(seed, source, skills_root or [], target)
-    failed = bootstrap.has_errors(findings)
-    if not failed:
-        bootstrap.create_census(target, data)
-    payload = {
-        "census": target.resolve().as_posix(),
-        "created": not failed,
-        "resolved": sum(entry.path is not None for entry in data.skills.values()),
-        "summary": summarize(findings),
-        "findings": [
-            {**asdict(f), "severity": f.severity.value, "ask_user": f.question is not None}
-            for f in findings
-        ],
-    }
-    emit("init", payload, selection, g.target())
-    return 1 if failed else 0
+    return init_at(
+        target, skills_root or [], fmt, out, force, profile, include, exclude, no_rich, banner
+    )
 
 
 @command

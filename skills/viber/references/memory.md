@@ -191,13 +191,14 @@ guides the workflow.
 
 | Artifact | Owns | Memory's relation |
 |---|---|---|
-| `docs/steering/` | The project's specification (perception + tech) | A settled decision that becomes part of the spec is written there; `settled.md` keeps the question→answer→reason provenance and points to it. |
+| A documentation Skill's specification tree (and other domain artifacts) | The project's specification, owned by that Skill | A settled decision that becomes part of the spec is written there; `settled.md` keeps the question→answer→reason provenance and points to it. |
 | `AGENTS.md` | The agent rulebook (obligations, pointers) | A settled decision that becomes a rule is written there; `settled.md` records why. |
 | `.viber/*.md` | The conversational ledger | The questions, answers, and lessons themselves — including the ones not yet promoted to a spec or rule. |
 
 **One fact, one home.** Memory records the *provenance* (what was asked, answered, learned, and why); the spec
 and rulebook own the *operative* fact. Memory points to where a settled decision landed; it does not duplicate
-the spec's body.
+the spec's body. This is the general information-ownership rule (`supervision.md` 5.0): every domain Skill owns
+its content in its own canonical artifact, and Viber's ledger points to it rather than hoarding a copy.
 
 ---
 
@@ -250,7 +251,7 @@ the spec's body.
 
 ### Memory SHOULD NOT
 
-- Become a second specification — the spec lives in `docs/steering/`, the rulebook in `AGENTS.md`.
+- Become a second specification — the spec lives in its owning documentation Skill's specification tree, the rulebook in `AGENTS.md`.
 - Hold secrets or personal data values.
 - Silently fill an unanswered question with a default.
 - Present an implicit answer as an explicit user mandate.
@@ -271,7 +272,7 @@ The memory pipeline is diagrammed in [`memory-flow.mmd`](../assets/diagrams/memo
 
 1. **Promotion path.** The exact rule for promoting a durable user-level fact from project `learnt.md` to the
    user's global memory / `personalize` — when it is automatic, when it asks.
-2. **Topic linkage.** Whether `memory.md` rows should link to a `close-topics` topic id or a steering doc path,
+2. **Topic linkage.** Whether `memory.md` rows should link to a `close-topics` topic id or a domain doc path,
    so a deferred question can be traced to the spec area it belongs to.
 3. **Skill wrapper.** Whether Memory stays a passive ledger (this document) or also gains a small shared Skill
    that records and surfaces rows on demand. The ledger works without a Skill; a wrapper is optional.

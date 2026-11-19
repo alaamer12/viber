@@ -13,7 +13,7 @@ viber config get <key>       # one key with its layer
 viber config path            # the files and plugin dirs (exists/absent)
 ```
 
-Keys: `census`, `profile`, `format`, `telemetry`, `plugins`. Everything else (`out`, `force`,
+Keys: `census`, `project`, `profile`, `format`, `telemetry`, `plugins`. Everything else (`out`, `force`,
 `include`, `exclude`) is flag-only — refuse to write it; the CLI rejects it, and so should you.
 
 ## Set
@@ -33,6 +33,19 @@ viber config unset <key>                # removes from one layer; ack names what
 
 `telemetry=false` → `use`/`outcome` ack "telemetry disabled" and write nothing. Do not fake
 invocations into the db by hand when disabled.
+
+## Multi-project
+
+`viber init` mints a short location-fingerprint **id** for a project and registers it (id → folder)
+in the user `projects.json`; print and record the id — it is not sensitive. Resume from anywhere:
+`viber --project <id> <cmd>`, or make it the default with `viber project use <id>` (then plain
+`viber <cmd>` works on it). Selection: `-C` file > `--project` flag > `VIBER_PROJECT` env > the **nearest enclosing project**
+(walks up from cwd) > the `project` saved default. An enclosing folder beats the default; pass
+`--project` to override. The walk-up stops at a `.git` boundary (dir or worktree/submodule file), so a
+nested checkout never borrows the parent's data.
+The id is derived from the path, so a **moved** folder needs `viber project link <id> --to <newdir>`
+(no guarantee — `viber project list` flags `missing`). `viber now <id> --details` shows location,
+step, counts, last action.
 
 ## Plugins (internal, off by default)
 

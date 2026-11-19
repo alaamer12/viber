@@ -88,6 +88,15 @@ They come from one of the two Skill Decks and are used only when the project or 
 
 Deck Skills are never Mandatory and never expected. They are described in section 8.
 
+### 2.5. Recurring Skills
+
+A skill flagged `recurring` (`viber set <skill> recurring true`) is meant to be revisited, not
+finished once — typically a rulebook/spec skill started early and deferred while the project is
+unclear. Because `next` offers only the current step's roster, such a skill would vanish once the
+project advances; the CLI instead keeps a used-but-never-`ok`'d recurring skill in a cross-step
+**revisit** pool (`viber next`/`viber situation`) until an `ok` settles it. Work can also be
+recorded in bulk: `viber use a b c` (validates every name before recording any).
+
 ---
 
 # 3. Phase One — Idea & Understanding
