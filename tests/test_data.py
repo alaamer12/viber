@@ -2,9 +2,11 @@
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
+from viber.data import frontmatter
 from viber.data.frontmatter import list_content, parse_frontmatter
 from viber.data.store import CensusError, dump_census, load_census, save_census
 from viber.data.telemetry import TelemetryDB
@@ -73,6 +75,208 @@ def test_frontmatter_shapes(tmp_path: Path) -> None:
     md2 = tmp_path / "plain.md"
     md2.write_text("no frontmatter here", encoding="utf-8")
     assert parse_frontmatter(md2) == {}
+
+
+@pytest.mark.parametrize(
+    ("marker", "expected"),
+    [
+        (">", "first second\n"),
+        (">-", "first second"),
+        (">+", "first second\n\n"),
+        ("|", "first\nsecond\n"),
+        ("|-", "first\nsecond"),
+        ("|+", "first\nsecond\n\n"),
+    ],
+)
+def test_frontmatter_block_scalars(tmp_path: Path, marker: str, expected: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\ndescription: {marker}\n  first\n  second\n\n---\n", encoding="utf-8")
+    assert parse_frontmatter(md)["description"] == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("'It''s useful'", "It's useful"),
+        ('"Say \\"hello\\""', 'Say "hello"'),
+        ('"Use --- between: sections # literally"', "Use --- between: sections # literally"),
+        ("Use for checks # author note", "Use for checks"),
+        ("|-\n  ---\n  # literal content", "---\n# literal content"),
+    ],
+)
+def test_frontmatter_quotes_separators_and_comments(
+    tmp_path: Path, value: str, expected: str
+) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\ndescription: {value}\n---\nbody: [not YAML\n", encoding="utf-8")
+    assert parse_frontmatter(md)["description"] == expected
+
+
+def test_frontmatter_preserves_unconsumed_metadata(tmp_path: Path) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(
+        "---\nname: sample\nhooks:\n  Stop:\n    - hooks:\n"
+        "        - command: check\n          timeout: 10\n"
+        "metadata: {tags: [python, yaml], enabled: true}\nuser-invocable: false\n---\n",
+        encoding="utf-8",
+    )
+    assert parse_frontmatter(md) == {
+        "name": "sample",
+        "hooks": {"Stop": [{"hooks": [{"command": "check", "timeout": 10}]}]},
+        "metadata": {"tags": ["python", "yaml"], "enabled": True},
+        "user-invocable": False,
+    }
+
+
+@pytest.mark.parametrize("text", ["", "plain text", "---not a fence\nname: x\n---\n"])
+def test_frontmatter_missing_exact_opening_fence(tmp_path: Path, text: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(text, encoding="utf-8")
+    assert parse_frontmatter(md) == {}
+
+
+@pytest.mark.parametrize("ending", ["", "---not a fence\n", "--- \n", "  ---\n"])
+def test_frontmatter_requires_exact_closing_fence(tmp_path: Path, ending: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\nname: x\n{ending}", encoding="utf-8")
+    with pytest.raises(CensusError, match="unterminated") as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "description: [broken",
+        'description: "unterminated',
+        "metadata: {nested: [broken}",
+        "description: !!python/object/apply:builtins.str [unsafe]",
+        "description: !unknown value",
+        "version: !!int invalid",
+    ],
+)
+def test_frontmatter_invalid_yaml_is_contextual(tmp_path: Path, content: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\n{content}\n---\n", encoding="utf-8")
+    with pytest.raises(CensusError, match="YAML") as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize("content", ["[a, b]", "[]", "plain scalar", "false", "1", "null", ""])
+def test_frontmatter_requires_mapping(tmp_path: Path, content: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\n{content}\n---\n", encoding="utf-8")
+    with pytest.raises(CensusError, match="mapping") as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize("field", ["name", "description", "when_to_use", "viber"])
+@pytest.mark.parametrize("value", ["true", "42", "[text]", "{nested: text}"])
+def test_frontmatter_rejects_nonstring_consumed_fields(
+    tmp_path: Path, field: str, value: str
+) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\n{field}: {value}\n---\n", encoding="utf-8")
+    with pytest.raises(CensusError, match=field) as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+def test_frontmatter_allows_null_text_fields(tmp_path: Path) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(
+        "---\nname: null\ndescription: null\nwhen_to_use: null\nviber: null\n---\n",
+        encoding="utf-8",
+    )
+    assert parse_frontmatter(md) == dict.fromkeys(["name", "description", "when_to_use", "viber"])
+
+
+@pytest.mark.parametrize("tag", ["part", "separated", "excluded"])
+def test_frontmatter_accepts_viber_tags(tmp_path: Path, tag: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\nviber: {tag}\n---\n", encoding="utf-8")
+    assert parse_frontmatter(md)["viber"] == tag
+
+
+@pytest.mark.parametrize("tag", ["unknown", "PART", "''"])
+def test_frontmatter_rejects_invalid_viber_tags(tmp_path: Path, tag: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\nviber: {tag}\n---\n", encoding="utf-8")
+    with pytest.raises(CensusError, match="viber") as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize(("value", "expected"), [('"1.2.3"', "1.2.3"), ("2", "2"), ("1.5", "1.5")])
+def test_frontmatter_version_scalar_conversion(tmp_path: Path, value: str, expected: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\nversion: {value}\n---\n", encoding="utf-8")
+    assert parse_frontmatter(md)["version"] == expected
+
+
+@pytest.mark.parametrize("value", ["true", "false", "[1, 2]", "{major: 1}", "null", "2026-11-19"])
+def test_frontmatter_rejects_invalid_versions(tmp_path: Path, value: str) -> None:
+    md = tmp_path / "SKILL.md"
+    md.write_text(f"---\nversion: {value}\n---\n", encoding="utf-8")
+    with pytest.raises(CensusError, match="version") as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize("failure", ["missing", "directory", "invalid-utf8"])
+def test_frontmatter_read_errors_are_contextual(tmp_path: Path, failure: str) -> None:
+    md = tmp_path / "SKILL.md"
+    if failure == "directory":
+        md.mkdir()
+    elif failure == "invalid-utf8":
+        md.write_bytes(b"---\nname: \xff\n---\n")
+    with pytest.raises(CensusError) as exc:
+        parse_frontmatter(md)
+    assert str(md) in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    ("metadata", "expected"),
+    [
+        ({"when_to_use": "  Explicit trigger.\n", "description": "Use for other work."},
+         "Explicit trigger."),
+        ({"when_to_use": "Standalone trigger."}, "Standalone trigger."),
+        ({"when_to_use": None, "description": "Summary. Use when checking YAML. Extra detail."},
+         "Use when checking YAML."),
+        ({"when_to_use": "", "description": "Summary. Use for authoring tests. Extra detail."},
+         "Use for authoring tests."),
+        ({"when_to_use": " \n\t", "description": "Summary. Use before releasing. Extra detail."},
+         "Use before releasing."),
+        ({"description": "Summary. Invoke when reviewing. Extra detail."},
+         "Invoke when reviewing."),
+        ({"description": "Summary; use when checking YAML! Extra detail."},
+         "use when checking YAML!"),
+        ({"description": "Summary. Use\nwhen checking YAML without punctuation"},
+         "Use\nwhen checking YAML without punctuation"),
+        ({"description": "  First sentence. Second sentence.  "}, "First sentence."),
+        ({"description": "First question? Second sentence."}, "First question?"),
+        ({"description": "  Description without punctuation  "}, "Description without punctuation"),
+        ({"description": "Reuse when needed. Second sentence."}, "Reuse when needed."),
+    ],
+)
+def test_when_to_use_fallbacks(
+    tmp_path: Path, metadata: dict[str, Any], expected: str
+) -> None:
+    assert frontmatter.when_to_use(metadata, tmp_path / "SKILL.md") == expected
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [{}, {"description": None}, {"description": ""},
+     {"when_to_use": " \n", "description": " \t"}],
+)
+def test_when_to_use_requires_real_text(tmp_path: Path, metadata: dict[str, Any]) -> None:
+    md = tmp_path / "SKILL.md"
+    with pytest.raises(CensusError, match="when_to_use") as exc:
+        frontmatter.when_to_use(metadata, md)
+    assert str(md) in str(exc.value)
 
 
 def test_list_content_scans(tmp_path: Path) -> None:

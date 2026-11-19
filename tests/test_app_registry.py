@@ -29,6 +29,8 @@ EXPECTED = sorted(
         "use",
         "outcome",
         "config",
+        "init",
+        "registry",
     ]
 )
 

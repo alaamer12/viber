@@ -2,9 +2,10 @@
 
 Rules: files get compact plain output only (never ANSI); a resolved rich display
 mode routes structured payloads through display_cmd (boxed layout, color only on a
-real tty); JSON is machine-strict (ASCII-safe dumps). Write is atomic, refuses
-existing targets without force, and reports bytes on stderr so stdout and
-exit codes stay clean for pipes.
+real tty); JSON is a machine contract — piped and filed bytes stay ANSI-free,
+a live tty gets syntax color, and files keep ASCII-escaped dumps while stdout
+speaks native UTF-8. Write is atomic, refuses existing targets without force, and
+reports bytes on stderr so stdout and exit codes stay clean for pipes.
 """
 
 import json
@@ -15,7 +16,7 @@ from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 from viber.models.domain import FormatKind
-from viber.output.display import PLAIN, Display
+from viber.output.display import PLAIN, Display, display_json
 from viber.output.display_cmd import render_command
 from viber.output.render import registry_order, render_text
 
@@ -76,7 +77,10 @@ def emit(command: str, payload: dict[str, Any], selection: list[str], target: Em
         data = filter_payload(command, payload, selection)
         if command == "skill":
             data = _strip_long_hints(data, selection)
-        text = json.dumps(data, indent=2)
+        # files keep the byte-stable ASCII escape; stdout speaks UTF-8 natively
+        text = json.dumps(data, indent=2, ensure_ascii=target.out is not None)
+        if target.out is None:
+            text = display_json(target.display, text)
     elif target.out is not None:
         # files are machine contracts: always the plain renderers, never rich
         text = render_text(command, payload, selection)

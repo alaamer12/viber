@@ -241,6 +241,25 @@ def render_parts(d: Display, parts: Sequence[Part]) -> str:
 # ----------------------------------------------------------- primitives
 
 
+def display_json(d: Display, text: str) -> str:
+    """Color JSON on a live tty; every other context returns the bytes untouched —
+    pipes and files are machine contracts, and color is granted only by the tty.
+    If a line would need wrapping to fit, color is dropped, never content clipped."""
+    if not (d.rich and d.color):
+        return text
+    longest = max((len(line) for line in text.splitlines()), default=0)
+    if longest > 4000:
+        return text
+    from dataclasses import replace as _replace
+
+    from rich.syntax import Syntax
+
+    buf = StringIO()
+    console = make_console(_replace(d, width=max(longest, 20)), buf)
+    console.print(Syntax(text, "json", theme="ansi_dark", word_wrap=False))
+    return buf.getvalue().rstrip("\n")
+
+
 def display_table(
     d: Display, columns: Sequence[str], rows: Sequence[Sequence[str]], empty: str = "(none)"
 ) -> str:

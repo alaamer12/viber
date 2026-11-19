@@ -19,6 +19,10 @@ It prepares Viber to work on a project in three steps:
 
 `init` can be run again at any time. A second run refreshes the registry and re-checks where the project stands; it never starts the project over.
 
+This is the **agent workflow** (`/vinit`, also written `/viber init`), not the shell command `viber init`.
+The CLI only bootstraps the census (section 2.9); `viber registry` exports deck metadata (section 2.2).
+Neither command writes the annotated registry, memory files, `AGENTS.md`, or `.gitignore`, or starts the lifecycle.
+
 ---
 
 ## 2. Step 1 — Understand the User's Deck
@@ -39,6 +43,8 @@ For the author of Viber, the deck is **Amr's Deck**: the Skills registered in Am
 ### 2.2. How It Is Read
 
 - **Metadata only.** For each Skill, `init` reads its name, description and when-to-use from the top of its `SKILL.md`. It does not load whole Skills; the registry is an index, not a copy.
+- **YAML block scalars are resolved.** Frontmatter may use `>-` (folded) or `|` (literal) block scalars for `description` or `when_to_use`. The parser must resolve them to their string value before extracting — the raw `>-` marker is never a cell value.
+- **When-to-use fallback (never empty).** If the `when_to_use` field is absent, derive it from the description's trigger clause (the "Use when…", "Use for…", "Use before…", "Invoke when…" sentence). If no trigger clause exists, use the description's first sentence as the trigger context. A registry cell left empty is a defect — every skill has a reason to be invoked.
 - **Each Skill is classified** as one of:
   - **Viber** — a Skill that is part of the lifecycle (as listed in the Project Lifecycle document).
   - **`<USERNAME>`'s Deck** — every other registered or extension-source Skill.
@@ -48,6 +54,18 @@ For the author of Viber, the deck is **Amr's Deck**: the Skills registered in Am
 - **Conflicts are noted.** When the same Skill name appears in more than one source with different content, both are recorded and the user is told.
 
 The Opensource Deck — every published Skill that is not registered — is **not** scanned by `init`. It is open-ended, so its Skills are discovered when they are needed, with `find-skills` or a web search. A Skill the user registers later joins the user's deck on the next `init`.
+
+Use the CLI metadata export rather than an ad-hoc frontmatter parser:
+
+```sh
+viber registry --skills-root "<installed-root>"
+viber registry --skills-root "<installed-root>" --skills-root "<project-skills-root>" -f json -o "<export-file>"
+```
+
+Repeat `--skills-root` for every registered or approved extension root; all specified roots are scanned.
+The exporter uses safe YAML loading and the fallback above. `-f json` selects JSON; `-o` writes the export
+instead of stdout. This is metadata, **not** the full annotated registry in section 2.4: classification,
+scope, area, conflicts, and user-approved exclusions remain the agent's and user's work.
 
 ### 2.3. Where the Registry Is Stored
 
@@ -129,23 +147,35 @@ layout folder the first time something needs to live there — no empty scaffold
 adopted as-is; relocating a project's files to match the layout follows supervision's migration rule — ask the
 user, recommend the move (`../regime/supervision.md` 5.3).
 
-**`.viber/` gitignore choice:** `init` recommends adding `.viber/` to `.gitignore` (runtime data is regenerable).
-Ask the user once: ignore (default) or commit (shared ledger across clones). Record the answer in the registry
-header. On re-run, honor the recorded choice — never re-ask unless the user brings it up.
+**Knowledge is committed by default.** Follow `../regime/structure.md` section 5: do not add a
+blanket `.viber/` ignore or ask an ignore-or-commit question. Keep the generated, environment, and
+declared-private path ignores; preserve any explicit existing project Git policy rather than silently
+replacing it. Memory and project decisions are durable knowledge, not regenerable runtime data.
 
 ### 2.9 The Per-Project Census
 
-`init` seeds the project's census at `.viber/.data/viber.json` from the master seed, through the `viber` CLI
-(it is the sole writer). As it studies the user's actual deck it fills, per project and per skill:
+Bootstrap a missing project census from the master seed **only through the `viber` CLI**, from the project root:
 
-- **`fit.serves`** — which steps this skill actually serves in this project.
-- **`fit.doing`** — what exactly this skill is expected to *do* here, in one or two concrete sentences.
-- **`fit.why`** — why this skill may be a next step here, in this project's terms.
+```sh
+viber init --skills-root "<installed-root>"
+```
 
-These two long fields are what `viber next` prints under `do:` and `why it exists here` — a census without
-them answers "what next?" with a name instead of a task. Relation edges carry their `long_hint` use-case the
-same way: authored once, read from both ends. A skill that serves a step must not enter the per-project
-census with empty `doing`/`why`.
+Repeat `--skills-root` for additional installed roots. The default target is `.viber/.data/viber.json`;
+`-C "<census-file>"` selects a census **file**, never a project directory. The command refuses an existing
+census and does not edit other project files. On an agent `/vinit` refresh, reuse the existing census instead.
+Installed Skill paths resolve to absolute realpaths. Missing Skills retain a null path and a blocker,
+with a warning; a seed entry is not proof that its Skill is installed.
+
+While studying the deck, review the seeded `fit.serves` step bindings and personalize every skill's task:
+
+- `viber set <skill> doing "<what exactly this skill must do in this project, concretely>"`.
+- `viber set <skill> why "<why it may be the next step here>"`.
+
+Preserve the seed's generic `doing`/`why` until these project-specific replacements are ready; never reset
+them to empty. `viber next` and `viber situation` print them as `do:` and `why it exists here`; empty means
+the router answers "what next?" with a name instead of a task. Step bindings come from the seed; the current
+`viber set` fields do not include `serves`. Relation edges carry their authored `long_hint` use-case,
+read from both ends.
 
 ---
 

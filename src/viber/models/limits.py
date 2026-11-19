@@ -87,7 +87,8 @@ _RAW: Final[tuple[Limit, ...]] = (
     # skill entry — lists
     _l(
         "history", _I, 100, "a ledger, not an archive — rolling window: oldest evicts on append",
-        "viber compact the old trail first; eviction is automatic and announced",
+        "the /vcompact skill archives the old trail if you want it kept; "
+        "eviction itself is automatic and announced",
     ),
     _l(
         "blockers", _I, 20, "blocked means a handful of named walls",

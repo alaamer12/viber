@@ -206,3 +206,48 @@ class TestCliFlag:
         r = call(app, ["use", "ghost"], census_file)
         assert r.exit_code == 1
         assert r.stdout_bytes == b"" or r.stdout == ""
+
+
+class TestJsonColor:
+    """JSON presentation: ANSI on a live tty only; piped/filed bytes unchanged."""
+
+    def test_tty_colors_piped_does_not(self) -> None:
+        import re
+
+        text = '{\n  "a": 1\n}'
+        assert dp.display_json(RICH, text) == text  # rich layout, no tty: identical bytes
+        colored = dp.display_json(Display("rich", True, 80), text)
+        assert "\x1b[" in colored
+        assert json.loads(re.sub(r"\x1b\[[0-9;]*m", "", colored)) == {"a": 1}
+
+    def test_oversized_line_drops_color_not_content(self) -> None:
+        text = '{\n  "a": "' + "x" * 5000 + '"\n}'
+        d = Display("rich", True, 80)
+        assert dp.display_json(d, text) == text  # no clipping, no wrapping, just plain
+
+    def test_cli_json_pipe_is_ansi_free(self, app: Any, census_file: Path) -> None:
+        r = call(app, ["fields", "-f", "json"], census_file)
+        assert r.exit_code == 0 and "\x1b" not in r.output
+        assert json.loads(r.output)["fields"]
+
+    def test_cli_json_stdout_utf8_not_escaped(self, app: Any, census_file: Path) -> None:
+        data = json.loads(census_file.read_text(encoding="utf-8"))
+        name = next(iter(data["skills"]))
+        data["skills"][name]["description"] = "dash — ✓ naïve"
+        census_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        r = call(app, ["skill", name, "-f", "json"], census_file)
+        assert chr(0x2014) in r.output and "\\u2014" not in r.output
+        assert json.loads(r.output)["description"] == "dash — ✓ naïve"
+
+    def test_json_out_file_stays_ascii_escaped(self, app: Any, census_file: Path,
+                                               tmp_path: Path) -> None:
+        data = json.loads(census_file.read_text(encoding="utf-8"))
+        name = next(iter(data["skills"]))
+        data["skills"][name]["description"] = "dash — ✓"
+        census_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        out = tmp_path / "s.json"
+        r = call(app, ["skill", name, "-f", "json", "-o", str(out)], census_file)
+        assert r.exit_code == 0
+        raw = out.read_bytes()
+        raw.decode("ascii")  # the file contract: byte-stable ASCII escapes
+        assert "\\u2014" in raw.decode("ascii")

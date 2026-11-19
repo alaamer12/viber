@@ -41,9 +41,9 @@ two fields. Identities are `{FIELD}_{KIND}` with kinds:
 - `EMPTY` / `BAD_DATE` where the field's existence rule requires it
 
 Every identity exists in `limits.py` exactly once, with its cap, one-line **why**
-(the purpose the bound protects), and its **recovery** (the exact command that fixes
-it: `viber compact` for a full history, shorten `SKILL.md` frontmatter before
-`refresh`, split relations, etc.). Messages are assembled from the catalog, so what
+(the purpose the bound protects), and its **recovery** (the exact move that fixes
+it: the `/vcompact` skill before a full history, shorten `SKILL.md` frontmatter
+before `refresh`, split relations, etc.). Messages are assembled from the catalog, so what
 the CLI prints always matches what `viber fields` promises — drift is impossible
 because both read the same table.
 

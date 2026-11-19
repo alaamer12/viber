@@ -99,6 +99,17 @@ REGISTRY: Final[dict[str, tuple[FieldSpec, ...]]] = {
         _f("top", "core", _STD_FULL),
         _f("rows", "rows", _ALL),
     ),
+    "init": (
+        _f("census", "core", _ALL),
+        _f("created", "core", _ALL),
+        _f("resolved", "core", _ALL),
+        _f("summary", "core", _ALL),
+        _f("findings", "rows", _ALL),
+    ),
+    "registry": (
+        _f("skills", "rows", _ALL),
+        _f("conflicts", "rows", _ALL),
+    ),
     "lint": (
         _f("summary", "core", _ALL),
         _f("findings", "rows", _STD_FULL),

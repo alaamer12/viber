@@ -66,6 +66,19 @@ def test_null_path_without_blockers_warns(tmp_path: Path, app: Any) -> None:
     assert any(f["check"] == "null-path" and f["severity"] == "warning" for f in lint_json(app, p))
 
 
+def test_null_path_with_blockers_still_warns(tmp_path: Path, app: Any) -> None:
+    p = make_census(tmp_path, lambda d: None)
+    findings = lint_json(app, p)
+    assert any(
+        f["check"] == "null-path" and f["subject"] == "webthing"
+        and f["severity"] == "warning" and "cannot" in f["detail"]
+        for f in findings
+    )
+    result = runner.invoke(app, ["lint", "-C", str(p), "-nr"])
+    assert result.exit_code == 0
+    assert "webthing" in result.output
+
+
 def test_version_drift_warning(tmp_path: Path, app: Any) -> None:
     skill = tmp_path / "disk"
     skill.mkdir()

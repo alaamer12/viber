@@ -53,9 +53,3 @@ def save_census(path: Path, census: Census) -> None:
     tmp = path.with_suffix(".tmp")
     tmp.write_text(dump_census(census), encoding="utf-8", newline="\n")
     os.replace(tmp, path)
-
-
-def census_dict(census: Census) -> dict[str, Any]:
-    """Full by-alias dump — the base payload every output layer selects keys from."""
-    result: dict[str, Any] = census.model_dump(mode="json", by_alias=True)
-    return result

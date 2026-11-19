@@ -25,15 +25,19 @@ tty*, and the tty is consulted once, in `resolve_display()`.
 Layout is **not** gated on the terminal — every command that displays output displays it rich, piped or
 not; the terminal only gates *color*. A piped rich render is full box layout with zero ANSI bytes (a plain
 `Console` writing to a buffer), so "rich everywhere stdout goes" costs pipes nothing but readability.
-The remaining plain paths are the machine contracts, not display: `--out` files and `-f json`.
+The remaining plain paths are the machine contracts: `--out` files, and `-f json` whenever stdout is not
+a live terminal.
 
 - `--no-rich` (short `-nr`) is terminal: plain layout, no color, nothing overrides it. No positive `--rich`
   flag exists on purpose — typer's decl parsing would bind `-nr` to the *positive* half of a
   `--rich/--no-rich` pair, inverting the name. Force-on is `VIBER_RICH=1`.
 - A bad `VIBER_RICH` value warns and falls to auto — the chain doctrine: a read never bricks a run.
 - `NO_COLOR` is honored by rich itself (color axis only); it never changes layout.
-- Piped/redirected stdout gets **rich layout, zero ANSI**; only `--out` files and `-f json` stay plain —
-  those two are machine contracts, not presentation.
+- Piped/redirected stdout gets **rich layout, zero ANSI**; `--out` files stay plain — machine contracts.
+- `-f json` obeys the same color rule as everything else: a **live tty** gets syntax-colored JSON
+  (`display_json`, ansi_dark theme); piped or redirected JSON returns the bytes untouched. Stdout JSON
+  is native UTF-8 (readable — dashes are not `\u2014`); JSON written with `--out` keeps byte-stable
+  ASCII escapes. Color never enters a pipe, and an over-long line drops color rather than clipping content.
 
 ## 3. The one importer rule
 
@@ -65,15 +69,16 @@ presentation failure must never become a new error mode.
 ## 5. Display primitives
 
 `display.py` exposes the whole presentation surface: `display_table`, `display_panel`, `display_success`,
-`display_info`, `display_status`, `display_warning`, `display_error` — all returning `str` (so `emit` stays
-the single stdout writer); plus `report_warning` / `report_error`, the only stderr writers. Business code
-never formats color; it picks a primitive.
+`display_info`, `display_status`, `display_warning`, `display_error`, `display_json` — all returning `str`
+(so `emit` stays the single stdout writer); plus `report_warning` / `report_error`, the only stderr writers.
+Business code never formats color; it picks a primitive.
 
 ## 6. Rules
 
 - Flag > env > auto, evaluated once per run in `resolve_display()`; nothing re-detects later.
 - Color requires a tty. `force_terminal` is never set for captured or piped output.
-- JSON, `--out` files, and pipes are ANSI-free by structure, not by luck.
+- Pipes, `--out` files, and un-tty'd JSON are ANSI-free by structure, not by luck; JSON on a live tty
+  gets color the same way everything else does — granted by the tty alone.
 - Display capability is per-machine (flag/env), never a chain key — see `config.md` 2; committing "my console"
   into shared repo state would silently downgrade teammates.
 - Windows legacy consoles that render box glyphs wrong: `-nr` or `VIBER_RICH=0` is the documented instant

@@ -2,7 +2,8 @@
 
 > Design drafts for the Viber skill suite shipped at `skills/{viber, vinit, vcompact, vflow, adapt}`
 > (this project: `F:\Projects\Agent\projects\viber`). These docs are the design; the skills are the
-> enforceable artifact. See `PIPELINE.md` at project root for the draft-to-skill workflow.
+> enforceable artifact. See `PIPELINE.md` at project root for the draft-to-skill workflow,
+> `README.md` for identity and install, `USAGE.md` for day-to-day commands and pipe patterns.
 > Read exactly the doc your task names — each owns one concern; the others are links, never repeats.
 
 ## Regime — how Viber governs a project
@@ -29,6 +30,10 @@ Local index: [commands/index.md](commands/index.md)
 | `commands/init.md` | `vinit` — the entry command spec |
 | `commands/compact.md` | `vcompact` — the compaction command spec |
 | `commands/flow.md` | `vflow` — the task-scale flow command spec |
+
+## Bug reports
+
+[bugs/index.md](bugs/index.md) tracks reported defects, their resolutions, and verification evidence.
 
 ## Diagrams
 

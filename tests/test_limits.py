@@ -143,7 +143,8 @@ class TestFieldsCommand:
         groups = {p.split(".")[0] for p in FIELD_INDEX}
         assert {
             "frontmatter", "config", "telemetry", "fit", "relation",
-            "content", "deck", "step", "skill",
+            "content", "deck", "step", "skill", "env", "memory", "settled",
+            "learnt", "registry",
         } <= groups
         for key in ConfigKey:
             assert f"config.{key.value}" in FIELD_INDEX, key.value
@@ -152,9 +153,12 @@ class TestFieldsCommand:
         fm = {
             "name", "version", "description", "when_to_use", "argument-hint",
             "author", "specialized", "compatibility", "license", "metadata",
-            "lint-accept",
+            "lint-accept", "disable-model-invocation", "user-invocable", "hooks",
+            "updated", "viber",
         }
         assert {f"frontmatter.{k}" for k in fm} <= set(FIELD_INDEX)
+        for knob in ("VIBER_RICH", "VIBER_CONFIG_HOME", "NO_COLOR", "COLUMNS", "TERM"):
+            assert f"env.{knob}" in FIELD_INDEX, knob
 
     def test_groups_listing(self, app: Any, census_file: Path) -> None:
         r = call(app, ["fields", "groups", "-nr"], census_file)

@@ -9,7 +9,8 @@ flowchart TD
         EXCL["ask exclusions"]
         MEM["create memory files"]
         LAYOUT["ensure ignores"]
-        SRC --> META --> CLS --> REG --> EXCL --> MEM --> LAYOUT
+        CENSUS["census · bootstrap/reuse"]
+        SRC --> META --> CLS --> REG --> EXCL --> MEM --> LAYOUT --> CENSUS
     end
 
     subgraph S2["2 — MENTION IT IN AGENTS.md"]
@@ -31,7 +32,7 @@ flowchart TD
     end
 
     CMD --> SRC
-    LAYOUT --> AG
+    CENSUS --> AG
     ADD --> ST
     NEW --> ST
 
@@ -45,6 +46,6 @@ flowchart TD
     classDef decision fill:#fef3c7,stroke:#d97706,color:#78350f
     classDef endpoint fill:#f3e8ff,stroke:#9333ea,color:#581c87
 
-    class SRC,META,CLS,REG,EXCL,MEM,LAYOUT,ADD,NEW,FRESH,EXIST,NEXT,LD1 step
+    class SRC,META,CLS,REG,EXCL,MEM,LAYOUT,CENSUS,ADD,NEW,FRESH,EXIST,NEXT,LD1 step
     class AG,ST,LD2 decision
     class CMD,GO,LD3 endpoint

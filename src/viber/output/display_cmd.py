@@ -181,7 +181,7 @@ def _needs_and_commands(payload: dict[str, Any], sel: list[str]) -> list[Part]:
         parts += [TextPart(f"  • {n}") for n in payload["needs"]]
     if _sel(sel, "commands") and payload.get("commands"):
         joined = ", ".join(payload["commands"])
-        parts.append(TextPart(f"viber commands callable now: {joined}", "cyan"))
+        parts.append(TextPart(f"v-commands callable now (slash skills): {joined}", "cyan"))
     return parts
 
 
@@ -412,7 +412,32 @@ def _fields(payload: dict[str, Any], sel: list[str]) -> list[Part]:
     return parts
 
 
+def _init(payload: dict[str, Any], sel: list[str]) -> list[Part]:
+    pairs = [(key, str(payload[key])) for key in ("census", "created", "resolved") if key in sel]
+    return [TextPart("CENSUS INITIALIZATION", "bold"), KVPart(pairs), *_lint(payload, sel)]
+
+
+def _registry(payload: dict[str, Any], sel: list[str]) -> list[Part]:
+    parts: list[Part] = [TextPart("SKILL METADATA", "bold")]
+    if "skills" in sel:
+        rows = [
+            [str(skill[key] or "untagged") for key in
+             ("name", "description", "when_to_use", "source", "viber")]
+            for skill in payload["skills"]
+        ]
+        parts.append(TablePart(["Skill", "Purpose", "When to use", "Source", "Viber"], rows))
+    if "conflicts" in sel:
+        for conflict in payload["conflicts"]:
+            parts.append(TextPart(
+                f"ASK USER — source conflict for {conflict['name']}: "
+                + "; ".join(conflict["sources"]), "bold yellow",
+            ))
+    return parts
+
+
 RICH_BUILDERS: Final[dict[str, Builder]] = {
+    "init": _init,
+    "registry": _registry,
     "skill": _skill,
     "step": _step,
     "next": _next,

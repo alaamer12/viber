@@ -383,7 +383,8 @@ def fields_cmd(
         "--group",
         "-G",
         help="Show one artifact group only: census (unprefixed root), deck, step, skill, "
-        "fit, relation, content, history, frontmatter, config, telemetry",
+        "fit, relation, content, history, frontmatter, config, telemetry, env, memory, "
+        "settled, learnt, registry",
     ),
     name: str | None = typer.Option(
         None, "--name", "-N", help="Keep only paths containing this substring (e.g. -N hint)"

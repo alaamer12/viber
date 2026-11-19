@@ -1,37 +1,79 @@
-"""SKILL.md frontmatter parsing (stdlib regex, no PyYAML) and content-tree scanning."""
+"""Safe SKILL.md frontmatter parsing, trigger fallback, and content-tree scanning."""
 
 import re
 from pathlib import Path
 from typing import Any
 
-_FM_KEY = re.compile(r"^([a-z_-]+):\s*(.*)")
-_FOLD_MARKERS = (">-", ">", "|", "|-")
+import yaml
+
+from viber.data.store import CensusError
+
+_TRIGGER = re.compile(r"\b(?:use\s+(?:when|for|before)|invoke\s+when)\b", re.IGNORECASE)
 _SCAN_SKIP = (".git", "__pycache__", "scripts")
 
 
-def parse_frontmatter(skill_md: Path) -> dict[str, str]:
-    text = skill_md.read_text(encoding="utf-8-sig")
-    if not text.startswith("---"):
+def _string_field(metadata: dict[str, Any], field: str, source: Path) -> str | None:
+    value = metadata.get(field)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise CensusError(f"invalid frontmatter in {source}: {field} must be a string or null")
+    return value
+
+
+def parse_frontmatter(skill_md: Path) -> dict[str, Any]:
+    """Read a fenced YAML mapping without flattening unconsumed metadata."""
+    try:
+        text = skill_md.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeError) as exc:
+        raise CensusError(f"cannot read frontmatter from {skill_md}: {exc}") from exc
+    lines = text.split("\n")
+    if lines[0] != "---":
         return {}
-    end = text.find("---", 3)
-    if end == -1:
-        return {}
-    result: dict[str, str] = {}
-    current_key: str | None = None
-    current_val: list[str] = []
-    for line in text[3:end].strip().split("\n"):
-        m = _FM_KEY.match(line)
-        if m:
-            if current_key:
-                result[current_key] = " ".join(current_val).strip()
-            current_key = m.group(1)
-            val = m.group(2).strip()
-            current_val = [] if val in _FOLD_MARKERS else [val.strip("'\"")]
-        elif current_key and line.startswith("  "):
-            current_val.append(line.strip().strip("'\""))
-    if current_key:
-        result[current_key] = " ".join(current_val).strip()
+    try:
+        end = lines.index("---", 1)
+    except ValueError as exc:
+        raise CensusError(f"unterminated frontmatter in {skill_md}: missing closing ---") from exc
+    try:
+        result = yaml.safe_load("\n".join(lines[1:end]) + "\n")
+    except (yaml.YAMLError, ValueError, TypeError) as exc:
+        raise CensusError(f"invalid YAML frontmatter in {skill_md}: {exc}") from exc
+    if not isinstance(result, dict):
+        raise CensusError(f"invalid frontmatter in {skill_md}: expected a YAML mapping")
+    if any(not isinstance(key, str) for key in result):
+        raise CensusError(f"invalid frontmatter in {skill_md}: mapping keys must be strings")
+    for field in ("name", "description", "when_to_use", "viber"):
+        _string_field(result, field, skill_md)
+    if result.get("viber") is not None and result["viber"] not in (
+        "part", "separated", "excluded"
+    ):
+        raise CensusError(
+            f"invalid frontmatter in {skill_md}: viber must be part, separated, or excluded"
+        )
+    if "version" in result:
+        version = result["version"]
+        if isinstance(version, bool) or not isinstance(version, (str, int, float)):
+            raise CensusError(
+                f"invalid frontmatter in {skill_md}: version must be a string or number"
+            )
+        result["version"] = str(version)
     return result
+
+
+def when_to_use(metadata: dict[str, Any], source: Path) -> str:
+    """Prefer explicit trigger text, then a description trigger, then its first sentence."""
+    explicit = _string_field(metadata, "when_to_use", source)
+    if explicit is not None and explicit.strip():
+        return explicit.strip()
+    description = _string_field(metadata, "description", source)
+    if description is None or not description.strip():
+        raise CensusError(
+            f"invalid frontmatter in {source}: when_to_use or description must contain text"
+        )
+    description = description.strip()
+    trigger = _TRIGGER.search(description)
+    text = description[trigger.start():] if trigger else description
+    return re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip()
 
 
 def list_content(skill_dir: Path) -> dict[str, Any]:

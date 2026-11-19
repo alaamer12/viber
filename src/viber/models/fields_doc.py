@@ -11,7 +11,10 @@ doc — it points here.
 
 Order follows the pipeline: census root → decks → lifecycle → skills → fit →
 relations → content → history → SKILL.md frontmatter → config layers →
-telemetry tables.
+telemetry tables → environment knobs → the .viber memory ledgers and registry
+index (regime files the skills write; columns documented for the Router).
+Command payloads (REGISTRY keys) are display shape, derived per call and never
+persisted — the profile/include system owns those, not this catalog.
 """
 
 from dataclasses import dataclass
@@ -67,12 +70,12 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="census format version (not a skill version)", limit="census.version",
     ),
     _f(
-        "created", "date-str", default="\"\"", written="vinit on first run",
+        "created", "date-str", default="\"\"", written="init on first census creation",
         used="provenance", meaning="day the per-project census was generated",
         limit="created",
     ),
     _f(
-        "createdBy", "str", default="\"\"", written="vinit", used="provenance",
+        "createdBy", "str", default="\"\"", written="init", used="provenance",
         meaning="who generated this census (the <USERNAME> of the deck)",
         limit="createdBy",
     ),
@@ -104,20 +107,28 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         "skills", "map<name, SkillEntry>", required=True,
         written="`add-skill`, `refresh`, `set`; vinit seeds from master",
         used="everything — the census's heart",
-        meaning="every known skill with its fit, content, and history",
-        limit="skills",
+        meaning="every known skill with its fit, content, and history", limit="skills",
     ),
     _f(
-        "unclassified", "list", default="[]",
+        "skill.<name>", "slug (map key)", required=True,
+        written="`add-skill <name>` — the filesystem slug guard is its cap",
+        used="every join: relations, deck membership, step rosters, telemetry",
+        meaning="the skill's kebab-case slug — identity of the entry it keys",
+        limit="name",
+    ),
+    _f(
+        "unclassified", "list<name | {name,…}>", default="[]",
         written="vinit when it met a foreign/broken skill; `add-skill` never writes it",
-        used="status/situation counts; lint warns if a name is both classified and here",
+        used="status/situation counts; lint unclassified-overlap reads a dict "
+        "entry's name key",
         meaning="skills awaiting classification — an honest queue, not a guess",
         limit="unclassified",
     ),
     _f(
         "history", "list<{date,event}>", default="[]",
         written="`set . phase`, `log .`",
-        used="provenance trail; `skill`/census history display",
+        used="provenance trail; no command displays it yet — a skill card's -H "
+        "shows the SKILL's ledger, not this one",
         meaning="project-level event ledger; rolling window — oldest evicts on "
         "append, eviction is announced",
         limit="history",
@@ -135,8 +146,8 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
     ),
     _f(
         "deck.mutability", "open | closed", default="open", written="seed/vinit",
-        used="doctrine: closed decks (the author's) change only through PIPELINE; "
-        "open decks accept project installs",
+        used="doctrine label (closed decks change only through PIPELINE); "
+        "no command enforces it yet",
         meaning="whether projects may add members locally",
     ),
     _f(
@@ -198,14 +209,13 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
     # ---------------------------------------------------- skills.*
     _f(
         "skill.version", "dot-str | null", written="`refresh` from SKILL.md frontmatter",
-        used="rosters show '?' when null (that reads as blocked); "
-        "lint version-drift vs disk",
+        used="rosters show '?' when null; lint version-drift vs disk",
         meaning="the skill's own version as last observed on disk", limit="version",
     ),
     _f(
         "skill.type", "battery|meta|normal|hybrid|otherwise", default="normal",
         written="`set <skill> type` (closed enum, rejected at load otherwise)",
-        used="classification shown on the card; router/vinit fit judgement",
+        used="classification on the card; `list --by`/`--filter` grouping",
         meaning="what kind of skill this is; otherwise = honestly unclassifiable",
     ),
     _f(
@@ -222,6 +232,11 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="concrete situations the skill applies to", limit="use_cases",
     ),
     _f(
+        "skill.use_cases[]", "str (item)", default="[]", written="`set <skill> use_cases`",
+        used="lint checks each case line against the item cap",
+        meaning="one situation that fits the skill, in a phrase", limit="use_case",
+    ),
+    _f(
         "skill.deck", "deck-name | null",
         written="add-skill / `set <skill> deck` (lint conflict resolution)",
         used="path resolution layer, participation gate, lint membership",
@@ -231,7 +246,8 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         "skill.path", "rel-path | null",
         written="add-skill / `set <skill> path` (validated: SKILL.md must exist)",
         used="refresh, lint broken-path/version-drift, `skill --path`",
-        meaning="location relative to its deck's registry", limit="path",
+        meaning="absolute realpath in initialized projects; seed paths may be deck-relative",
+        limit="path",
     ),
     _f(
         "skill.owned", "bool", default="false",
@@ -314,6 +330,26 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="named walls that stop this skill now", limit="blockers",
     ),
     _f(
+        "fit.blockers[]", "str (item)", default="[]", written="`set <skill> blockers`",
+        used="lint checks each wall against the item cap — one blocker names one wall",
+        meaning="a single named wall", limit="blocker",
+    ),
+    _f(
+        "fit.produces[]", "str (item)", default="[]", written="seed/vinit",
+        used="lint artifact-item cap check",
+        meaning="one artifact the skill creates", limit="artifact",
+    ),
+    _f(
+        "fit.consumes[]", "str (item)", default="[]", written="seed/vinit",
+        used="lint artifact-item cap check",
+        meaning="one artifact the skill reads", limit="artifact",
+    ),
+    _f(
+        "step.needs[]", "str (item)", default="[]", written="seed",
+        used="lint artifact-item cap check",
+        meaning="one capability the step must accomplish", limit="artifact",
+    ),
+    _f(
         "fit.after", "list<Relation>", default="[]",
         written="seed (authored once, mirrored both ends)",
         used="topological roster order AND `next` reason lines (via hints)",
@@ -347,7 +383,7 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="the use-case the edge covers", limit="long_hint",
     ),
     _f(
-        "content.entry", "path", default="SKILL.md", written="refresh",
+        "content.entry", "path", default="SKILL.md", written="add-skill / refresh",
         used="--content manifest first line",
         meaning="the skill's main file",
     ),
@@ -399,7 +435,8 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
     ),
     _f(
         "frontmatter.when_to_use", "str", written="the skill author",
-        used="harness trigger text; viber never ingests it — fit.when is the census twin",
+        used="registry export uses it before description trigger/first-sentence fallback; "
+        "refresh preserves the separately curated fit.when",
         meaning="when the harness should invoke this skill",
     ),
     _f(
@@ -432,16 +469,46 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
     ),
     _f(
         "frontmatter.metadata", "map<key, value>", written="the skill author",
-        used="author notes for humans and agents; viber reads only flat "
-        "top-level keys, so these never reach the census",
-        meaning="one namespace for provenance notes: inspired_by, "
-        "catalog_last_verified, attribution, relationship, combines",
+        used="author notes for humans and agents; safe parsing preserves this mapping, "
+        "but it is not copied into the census",
+        meaning="one open namespace for provenance notes — seen on disk: inspired_by, "
+        "catalog_last_verified, attribution, relationship, combines, version, author, "
+        "compatibility, tags, source, category, role",
     ),
     _f(
         "frontmatter.lint-accept", "map<exception, reason>", written="the skill author",
         used="the deck's structural lint ends its argument here; viber never reads it",
         meaning="accepted-by-design exceptions, each with the reason that "
         "settles the fight ('Keep as-is.')",
+    ),
+    _f(
+        "frontmatter.disable-model-invocation", "bool", written="the skill author",
+        used="harness gate: the model must not pick this skill on its own; "
+        "viber never reads it",
+        meaning="true marks a user-only-invocation skill",
+    ),
+    _f(
+        "frontmatter.user-invocable", "bool", written="the skill author",
+        used="harness gate on slash availability; viber never reads it",
+        meaning="whether the user may invoke the skill directly",
+    ),
+    _f(
+        "frontmatter.hooks", "nested map", written="the skill author",
+        used="host harness hook wiring (e.g. Stop -> hooks -> command/timeout); "
+        "safe frontmatter parsing preserves nesting, but viber never executes hooks",
+        meaning="commands the host runs at hook points",
+    ),
+    _f(
+        "frontmatter.updated", "date", written="the skill author / deck tooling",
+        used="staleness signal read by humans and deck tooling; viber never reads it",
+        meaning="last touched day (YYYY-MM-DD)",
+    ),
+    _f(
+        "frontmatter.viber", "part | separated | excluded", written="the skill author",
+        used="supervision umbrella membership declared on the skill "
+        "(spec: supervision.md 4, router.md); deck membership stays the primary gate; "
+        "no SKILL.md carries the tag yet",
+        meaning="whether the skill's relocatable output reroutes under .viber/",
     ),
     # ---------------------------------------------------- config.json layers
     # The five chain keys of .viber/.data/config.json and the user file (config.md owns
@@ -491,7 +558,8 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         meaning="when the invocation was recorded",
     ),
     _f(
-        "telemetry.invocations.step", "str | null", written="`viber use` (the step at the time)",
+        "telemetry.invocations.step", "str | null",
+        written="`viber use` (the step at the time; `--step-override/-s` records any name)",
         used="the step shown on the `last:` line",
         meaning="lifecycle step active when this ran",
     ),
@@ -521,6 +589,165 @@ FIELD_DOCS: Final[tuple[FieldDoc, ...]] = (
         "telemetry.meta.value", "str", required=True, written="seeded automatically",
         used="read for schema versioning",
         meaning="the stored value of a meta key",
+    ),
+    # ---------------------------------------------------- environment knobs
+    # Read-only surface: what the shell may set; no command writes these.
+    _f(
+        "env.VIBER_CENSUS", "path", written="the user's shell",
+        used="settings chain env layer (core/settings.py) — overrides project/user config",
+        meaning="env override of the census key",
+    ),
+    _f(
+        "env.VIBER_PROFILE", "minimal | standard | full", written="the user's shell",
+        used="settings chain env layer",
+        meaning="env override of the profile key",
+    ),
+    _f(
+        "env.VIBER_FORMAT", "text | json", written="the user's shell",
+        used="settings chain env layer",
+        meaning="env override of the format key",
+    ),
+    _f(
+        "env.VIBER_TELEMETRY", "true | false", written="the user's shell",
+        used="settings chain env layer",
+        meaning="env override of the telemetry switch",
+    ),
+    _f(
+        "env.VIBER_PLUGINS", "true | false", written="the user's shell",
+        used="settings chain env layer",
+        meaning="env override of the plugins switch",
+    ),
+    _f(
+        "env.VIBER_CONFIG", "path", written="the user's shell",
+        used="config_store.locate — redirects the PROJECT config file itself",
+        meaning="explicit path to the project config.json",
+    ),
+    _f(
+        "env.VIBER_CONFIG_HOME", "path", written="the user's shell",
+        used="config_store.locate — redirects the USER config dir",
+        meaning="explicit directory holding the user config.json",
+    ),
+    _f(
+        "env.VIBER_RICH", "1 | 0 | true | false", written="the user's shell",
+        used="display.resolve_display — forces layout; a bad value warns and "
+        "falls to auto (reads never brick)",
+        meaning="the per-machine display switch (force-ON lives only here)",
+    ),
+    _f(
+        "env.NO_COLOR", "any value", written="the user's shell / terminal",
+        used="rich honors it directly — color axis only, layout unchanged",
+        meaning="industry-standard no-color request",
+    ),
+    _f(
+        "env.COLUMNS", "int", written="the user's shell",
+        used="display.resolve_width — explicit width before terminal size",
+        meaning="forced render width (clamped 60-240)",
+    ),
+    _f(
+        "env.TERM", "terminal kind", written="the user's shell",
+        used="display auto-detection — 'dumb' forces plain; the empty string "
+        "does NOT (verified Windows fact)",
+        meaning="what kind of terminal believes it is",
+    ),
+    # ---------------------------------------------------- memory ledgers
+    # .viber/ tables under the regime's own discipline (docs/regime/memory.md owns
+    # the shapes; the CLI never writes them — skills do). Columns as the tables have them.
+    _f(
+        "memory.num", "M<n>", written="vinit / grill-me sessions",
+        used="the row handle questions get re-asked by",
+        meaning="ordinal of one open or deferred question",
+    ),
+    _f(
+        "memory.question", "str", written="vinit / grill-me sessions",
+        used="Router resurfaces open questions when blockers clear",
+        meaning="what is being asked",
+    ),
+    _f(
+        "memory.clarification", "str", written="vinit / grill-me sessions",
+        used="context for answering it well",
+        meaning="description / what the question means",
+    ),
+    _f(
+        "memory.blocks", "str", written="vinit / grill-me sessions",
+        used="what unblocks it — the surfacing condition",
+        meaning="what blocks it now",
+    ),
+    _f(
+        "memory.raised", "date", written="vinit / grill-me sessions",
+        used="age of the open question",
+        meaning="day it was asked",
+    ),
+    _f(
+        "memory.status", "open | deferred", written="the session",
+        used="deferred items surface when unblocked",
+        meaning="state of the question",
+    ),
+    _f(
+        "settled.num", "S<n>", written="the session that got the answer",
+        used="row handle; Question columns mirror the memory row it settles",
+        meaning="ordinal of one answered question",
+    ),
+    _f(
+        "settled.question", "str", written="the session",
+        used="so the answer is found by the question it closes",
+        meaning="the settled question",
+    ),
+    _f(
+        "settled.answer", "str", written="the user's decision",
+        used="Router avoids re-suggesting settled decisions",
+        meaning="the answer as given",
+    ),
+    _f(
+        "settled.reason", "str", written="the session",
+        meaning="why — explicit instruction or implicit read",
+        used="re-litigation fuel check before re-asking",
+    ),
+    _f(
+        "settled.kind", "explicit | implicit", written="the session",
+        used="how firmly the answer binds",
+        meaning="whether the user said it or it was inferred",
+    ),
+    _f(
+        "settled.settled", "date", written="the session",
+        used="age of the decision",
+        meaning="day it closed",
+    ),
+    _f(
+        "settled.provisional", "bool", written="the session",
+        used="a provisional answer may be re-opened; a firm one must not",
+        meaning="whether the decision is still draft (thaw posture)",
+    ),
+    _f(
+        "learnt.num", "L<n>", written="the session",
+        used="row handle",
+        meaning="ordinal of one learned fact",
+    ),
+    _f(
+        "learnt.fact", "str", written="the session",
+        used="shapes future decisions",
+        meaning="what was learned about the user or project",
+    ),
+    _f(
+        "learnt.evidence", "str", written="the session",
+        used="so the fact can be re-checked, not just trusted",
+        meaning="user said / observed / verified, with source",
+    ),
+    _f(
+        "learnt.implication", "str", written="the session",
+        used="how it should shape decisions",
+        meaning="what follows from the fact",
+    ),
+    _f(
+        "learnt.learnt", "date", written="the session",
+        used="age of the fact",
+        meaning="day it was learned",
+    ),
+    _f(
+        "registry.viber", "part | separated | excluded",
+        written="/viber init when indexing the deck; /adapt for project additions",
+        used="Router candidate search; supervision's rerouting gate "
+        "(supervision.md owns the rule)",
+        meaning="each skill's participation column in .viber/registry.md",
     ),
 )
 

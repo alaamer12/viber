@@ -177,20 +177,17 @@ The `.gitignore` must carry, at minimum (the `init` duty — see `../commands/in
 ```gitignore
 artifacts/
 scratch/
-.viber/            # recommended; user may opt out (shared ledger)
 **/.venv/          # and any language-env equivalent inside tools/
 <language build outputs: bin/ obj/ dist/ node_modules/ …>
 ```
 
 - `artifacts/` and `scratch/` are **fully** ignored — no exceptions, no curated files inside them. If
   something inside deserves committing, it graduates to its canonical home first.
-- `tools/` and `scripts/` are committed; only the environment and output folders inside them are
+- `tools/`, `scripts/`, `.viber/` are committed; only the environment and output folders inside them are
   ignored.
-- `.viber/` is **recommended gitignored** — it holds per-project runtime data (census, telemetry, memory)
-  that is regenerable by `vinit`. The user may opt out (commit it) when they want the ledger shared across
-  clones or machines. `vinit` asks once during its gitignore step and records the choice.
-- When `.viber/` is ignored, the exception worth un-ignoring is `.viber/.data/config.json` — the project
-  settings layer is meant to be shared (`!.viber/.data/config.json`); the user layer never is.
+- Do not add a blanket `.viber/` ignore: its memory, decisions, project census, and project settings are
+  durable knowledge, not regenerable runtime output. Follow any explicit existing project Git policy
+  without silently changing it; the committed-knowledge default is not a new ignore-or-commit question.
 - A declared-private path missing from `.gitignore` is a defect: fix the ignore line in the same change
   (`agents-md` privacy-sync duty).
 

@@ -224,8 +224,11 @@ def run_lint(
             if s not in step_names:
                 add(Severity.ERROR, "dangling-serves", name, f"serves unknown step '{s}'")
         if entry.path is None:
-            if not entry.fit.blockers:
-                add(Severity.WARNING, "null-path", name, "no path and no blockers recorded")
+            add(
+                Severity.WARNING, "null-path", name,
+                "no registered skill path — the Router cannot invoke this skill; "
+                "register an installed SKILL.md with: viber set " + name + " path <directory>",
+            )
         else:
             skill_dir = skill_dir_on_disk(census, census_path, entry)
             if skill_dir is None or not (skill_dir / "SKILL.md").is_file():

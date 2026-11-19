@@ -135,7 +135,7 @@ def render_next(p: dict[str, Any], sel: list[str]) -> str:
         if _selected(sel, "needs") and p.get("needs"):
             lines += ["", "needs still open:"] + [f"- {n}" for n in p["needs"]]
         if _selected(sel, "commands") and p.get("commands"):
-            lines += ["", "viber commands callable now: " + ", ".join(p["commands"])]
+            lines += ["", "v-commands callable now (slash skills): " + ", ".join(p["commands"])]
         lines.append("")
     if _selected(sel, "blocked") and p.get("blocked"):
         lines += ["blocked:"] + [f"- {b['skill']}: {b['blockers']}" for b in p["blocked"]]
@@ -360,7 +360,40 @@ def render_drift(p: dict[str, Any], sel: list[str]) -> str:
     return "\n".join(_table(table, ["Skill", "Census", "Disk"]))
 
 
+def render_init(p: dict[str, Any], sel: list[str]) -> str:
+    lines = ["CENSUS INITIALIZATION"]
+    for key in ("census", "created", "resolved"):
+        if key in sel:
+            lines.append(f"{key}: {p[key]}")
+    lines.append(render_lint(p, sel))
+    return "\n".join(lines)
+
+
+def render_registry(p: dict[str, Any], sel: list[str]) -> str:
+    from html import escape
+
+    def cell(value: Any) -> str:
+        text = " ".join(str(value or "untagged").split())
+        return escape(text, quote=False).replace("|", "&#124;")
+
+    lines = ["# SKILL METADATA"]
+    if "skills" in sel:
+        lines += ["", "| Skill | Purpose | When to use | Source | Viber |", "|---|---|---|---|---|"]
+        for skill in p["skills"]:
+            keys = ("name", "description", "when_to_use", "source", "viber")
+            values = [skill[key] for key in keys]
+            lines.append("| " + " | ".join(cell(value) for value in values) + " |")
+    if "conflicts" in sel and p["conflicts"]:
+        lines += ["", "## SOURCE CONFLICTS — ASK USER"]
+        for conflict in p["conflicts"]:
+            sources = "; ".join(map(cell, conflict["sources"]))
+            lines.append(f"- {cell(conflict['name'])}: {sources}")
+    return "\n".join(lines)
+
+
 RENDERERS: Final[dict[str, Renderer]] = {
+    "init": render_init,
+    "registry": render_registry,
     "skill": render_skill,
     "step": render_step,
     "next": render_next,

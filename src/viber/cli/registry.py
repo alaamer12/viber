@@ -12,7 +12,9 @@ from pathlib import Path
 
 import typer
 
-BUILTIN_MODULES: tuple[str, ...] = ("viber.cli.read", "viber.cli.write", "viber.cli.telemetry")
+BUILTIN_MODULES: tuple[str, ...] = (
+    "viber.cli.read", "viber.cli.write", "viber.cli.telemetry", "viber.cli.init_cmd",
+)
 
 SUBAPPS: tuple[tuple[str, str, str], ...] = (
     (

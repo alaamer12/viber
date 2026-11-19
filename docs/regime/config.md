@@ -39,7 +39,7 @@ a global `out` hijacks stdout from every command; a global include/exclude would
 raise `ProfileError` on unrelated commands. The `CHAIN` table in
 `src/viber/core/settings.py` is the single visible statement of this, and it
 generates the `config set` key whitelist — `viber config set force true` fails
-as "not configurable", it does not write a key nothing reads.
+with the closed-set choice error (exit 2); it does not write a key nothing reads.
 
 Relative paths (a `census` value) resolve against **cwd**, never against the
 config file's own directory — matching how the census itself is discovered.
@@ -111,7 +111,7 @@ distribution story. `VIBER_PLUGINS=0` kills it instantly.
 | Component | Relationship |
 |---|---|
 | `census` / PIPELINE | Knowledge vs behavior — the census never holds settings; settings never hold skill data |
-| `structure.md` | `.viber/.data/config.json` sits beside the census and telemetry; sharing it is the user's gitignore call (section 5 there) |
+| `structure.md` | `.viber/.data/config.json` sits beside the census and telemetry; project settings follow the committed-knowledge default, with only generated, environment, and declared-private paths ignored (section 5 there) |
 | `supervision.md` | settings files live under `.viber` like all Viber state; the umbrella never reroutes them elsewhere |
 | emit/profile layer | `profile`/`format` config values feed the same `-P`/`-f` machinery — no second shaping path |
 | telemetry | `telemetry false` gates the two writers (`use`, `outcome`); readers already handle an absent db |

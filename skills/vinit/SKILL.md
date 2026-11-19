@@ -15,6 +15,10 @@ Three steps, safe to repeat. The full contracts (registry format, participation 
 
 1. Find every registered Skill (global + project-level) and ask the user about extension repositories.
 2. Read metadata only from each `SKILL.md`: name, description, when-to-use, and the `viber: part|separated` tag.
+   Use `viber registry --skills-root "<installed-root>"` to export metadata; repeat `--skills-root` for every
+   registered root, with `-f json` and `-o "<export-file>"` when needed. This is not the annotated registry:
+   classification and exclusions remain agent/user work. Resolve YAML scalars safely and derive missing
+   when-to-use from the description's trigger clause, then its first sentence; never leave a blank cell.
 3. Classify: Viber lifecycle Skill vs deck, scope, area, conflicts; write `.viber/registry.md`.
 4. **Ask about exclusions** — which deck Skills should stay outside the umbrella — stating each consequence:
    in-deck = output rerouted to `.viber` + remembered; out = no guaranteed control or memory. Record in the
@@ -22,8 +26,15 @@ Three steps, safe to repeat. The full contracts (registry format, participation 
 5. Create the memory files from `viber` skill `assets/templates/` if absent — never overwrite existing ones.
 6. Ensure `.gitignore` carries the layout duties (`artifacts/`, `scratch/`, env/build outputs); create
    layout folders only on first write. Existing root artifacts: ask, recommend moving under `.viber`.
-7. **`.viber/` gitignore choice** — recommend ignoring `.viber/` (regenerable runtime data). Ask once:
-   ignore (default) or commit (shared ledger). Record in registry header; honor on re-run.
+   Follow `viber` skill → `references/structure.md` section 5: `.viber/` knowledge is committed by default,
+   not blanket-ignored. Preserve explicit existing project policy; do not ask an ignore-or-commit question.
+7. Bootstrap a missing census with `viber init --skills-root "<installed-root>"` from the project root;
+   repeat `--skills-root` for additional roots. It writes `.viber/.data/viber.json` by default and refuses
+   an existing census; `-C` selects a census **file**, not a project directory. Installed paths resolve to
+   absolute realpaths; missing Skills retain null paths and blockers with a warning. On refresh, reuse the
+   existing census. Preserve the seed's generic `doing`/`why` until personalizing them via
+   `viber set <skill> doing "<project task>"` and `viber set <skill> why "<project reason>"`; never clear them.
+   Full census duties: `references/init.md` section 2.9.
 
 ## Step 2 — mention it in AGENTS.md
 
@@ -47,4 +58,6 @@ missing ones Not Started, name the next step, suggest fitting deck Skills. Then 
 ## What this command is not
 
 Not a reset (repeat runs refresh, never erase); not the rulebook writer; not a Skill installer — it reads
-the deck as registered and records the user's exclusions.
+the deck as registered and records the user's exclusions. This agent workflow is not the shell command
+`viber init`: that command only bootstraps the census, without writing the registry, memory files,
+`AGENTS.md`, or `.gitignore`, or starting the lifecycle.

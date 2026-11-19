@@ -12,7 +12,7 @@ It divides the development journey into **four main phases**:
 3. **Project Foundation** — Establish the technical direction, architecture, engineering standards, and project documentation.
 4. **Implementation** — Turn the vision and technical foundation into a working product.
 
-Each phase contains a collection of Skills. These Skills have different responsibilities and produce outputs that help move the project forward.
+Each phase contains Skills and lifecycle tasks. These have different responsibilities and produce outputs that help move the project forward; a task's name does not guarantee a Skill with that name ships.
 
 The workflow also includes shared Skills that can be invoked during any phase. These are not separate lifecycle phases and do not have to follow the main sequence.
 
@@ -200,7 +200,7 @@ This phase is independent of technology choices.
 
 In other words, the product vision should describe what needs to be built without being unnecessarily limited by the implementation technology.
 
-## 4.2. Skills
+## 4.2. Skills and Tasks
 
 ### 1. pages
 
@@ -234,9 +234,12 @@ The three sections together provide a complete map of the product's pages.
 
 ### 2. prototype
 
-**Status:** Mandatory
+**Status:** Mandatory lifecycle task (deck-assisted)
 
-Creates the visual prototype of the product.
+Creates the visual prototype of the product. No named `prototype` Skill ships with Viber; carry out this
+task with suitable design Skills from the user's registered deck. Warn about the missing named tool rather
+than inventing a Skill invocation or installed path. The lifecycle task and its required output remain;
+a tool-availability warning is not a reason to skip them.
 
 The prototype is developed progressively rather than being treated as a one-time task.
 
@@ -280,7 +283,7 @@ A typical execution sequence is:
 
 1. Start defining the product using `pages`.
 2. Identify and document the Main Pages.
-3. Create the first prototype draft using `prototype`.
+3. Carry out the `prototype` lifecycle task with suitable registered deck Skills to create the first draft.
 4. Continue defining Secondary Pages.
 5. Define Complementary Pages.
 6. Refine the prototype to include the complete page structure and product features.
@@ -822,7 +825,7 @@ Any of these that a user has registered is in that user's deck instead.
 - **No warnings.** A deck Skill that is never used is not a missing step.
 - **One-off use** for a single task is simply using the Skill.
 - **Becoming part of the project's path** — for example, `seo` for every public page of a project — is an adaptation: `adapt` records it in the project's `AGENTS.md` with its lifecycle point and status.
-- **Complement, never replace.** When a deck Skill overlaps a Viber Skill, the Viber Skill still owns the lifecycle output, and the deck Skill adds to it. For example, `impeccable` can strengthen the work of `prototype` or `anti-slop` without replacing either.
+- **Complement, never replace.** When a deck Skill overlaps a Viber Skill, the Viber Skill still owns the lifecycle output, and the deck Skill adds to it. For example, `impeccable` can strengthen `anti-slop` without replacing it. Deck Skills can also carry out the `prototype` lifecycle task (section 4.2), which has no named shipped Skill.
 
 ---
 
@@ -842,7 +845,7 @@ Shared Skills such as `grill-me`, `close-topics`, `adapt`, `thaw` and `vcompact`
 
 ## 9.1. Mermaid Flowchart
 
-The complete lifecycle flowchart lives in [`lifecycle-flow.mmd`](../assets/diagrams/lifecycle-flow.mmd) — one renderable diagram file, so the lifecycle document and its graph each have a single owner. The graph mirrors sections 3–6: the four phases with their mandatory and optional Skills (carried by node color, see the diagram legend), the milestones between them, the intermediate Skills (`grill-me`, `close-topics`, `adapt`, `thaw`) reachable from any step, the two Skill Decks pulled in by relevance, and the project-phase bands DRAFT [DR] and IN-PROGRESS [IP] (section 1.2).
+The complete lifecycle flowchart lives in [`lifecycle-flow.mmd`](../assets/diagrams/lifecycle-flow.mmd) — one renderable diagram file, so the lifecycle document and its graph each have a single owner. The graph mirrors sections 3–6: the four phases with their mandatory and optional steps (carried by node color, see the diagram legend), the milestones between them, the intermediate Skills (`grill-me`, `close-topics`, `adapt`, `thaw`) reachable from any step, the two Skill Decks pulled in by relevance, and the project-phase bands DRAFT [DR] and IN-PROGRESS [IP] (section 1.2).
 
 ## 9.2. Phase Summary
 
@@ -857,16 +860,16 @@ The complete lifecycle flowchart lives in [`lifecycle-flow.mmd`](../assets/diagr
 
 # 10. Skills Inventory
 
-The following table summarizes the current Skill classification.
+The following table summarizes the current Skills and lifecycle tasks, not an installed-tool inventory.
 
-| Skill | Phase / Group | Status |
+| Skill / Task | Phase / Group | Status |
 |---|---|---|
 | idea-md | Idea & Understanding | Mandatory |
 | reveal | Idea & Understanding | Optional |
 | steering-perception | Idea & Understanding | Mandatory |
 | agents-md | Idea & Understanding | Mandatory |
 | pages | Vision | Mandatory |
-| prototype | Vision | Mandatory |
+| prototype (lifecycle task; no named shipped Skill) | Vision | Mandatory, deck-assisted |
 | denoise | Vision | Optional |
 | anti-slop | Vision | Optional |
 | steering-tech | Project Foundation | Mandatory |
@@ -930,7 +933,7 @@ The Project Lifecycle is a four-phase, Skill-based workflow:
 3. **Project Foundation** establishes how the product should be engineered and maintained.
 4. **Implementation** turns the defined product and technical foundation into working software.
 
-Mandatory Skills provide the standard workflow. Optional Skills add capabilities when needed. Shared Skills support the workflow across all phases. Deck Skills, from the user's deck and the Opensource Deck, are pulled in only when a project or task needs them.
+Mandatory Skills and lifecycle tasks provide the standard workflow. Optional Skills add capabilities when needed. Shared Skills support the workflow across all phases. Deck Skills, from the user's deck and the Opensource Deck, are pulled in only when a project or task needs them.
 
 The lifecycle's foundations are fixed, but each project has its own Viber version: `adapt` records what the project adds in its `AGENTS.md`, without ever changing the fixed foundations.
 

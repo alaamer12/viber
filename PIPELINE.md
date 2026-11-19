@@ -165,10 +165,19 @@ Every skill entry also carries what it *is* and what it's *for*:
 `set <skill> type <battery|meta|normal|hybrid|otherwise>` and `set <skill> use_cases '["..."]'`
 keep both writable through the CLI.
 
-The source project's `viber.json` (at project root) is the master seed. In this repo the CLI
-resolves to it automatically when no per-project census exists at `.viber/.data/viber.json`;
-`vinit` reads the seed, studies the user's actual deck, and writes the per-project census into
-`.viber/.data/`. The `--census <path>` flag overrides resolution for any other layout.
+The source project's `viber.json` (at project root) is the master seed, included in the wheel
+without maintaining a second authored copy. Read commands resolve to it in this repo when no
+per-project census exists. `viber init --skills-root "<installed-skills-folder>"` creates a new
+`.viber/.data/viber.json` instead: installed skill paths become absolute realpaths, unavailable
+skills retain null paths and blockers, and lint reports those gaps even when blockers exist.
+Initialization refuses an existing census and never copies completed project state or history.
+The `--census <path>` / `-C` flag always selects a census file, not a directory.
+
+`viber registry --skills-root "<installed-skills-folder>"` exports metadata from every skill in
+explicitly supplied roots using safe YAML parsing and nonempty trigger fallbacks. It does not
+replace the annotated registry: `/vinit` classifies the exported metadata, records exclusions,
+and personalizes the census through existing write commands. Neither shell command changes
+AGENTS.md, ignore rules, or memory ledgers.
 
 ## Layout
 
@@ -188,12 +197,16 @@ projects/viber/
 │   │   ├── router.md
 │   │   ├── supervision.md
 │   │   ├── structure.md
-│   │   └── memory.md
+│   │   ├── memory.md
+│   │   ├── config.md
+│   │   ├── display.md
+│   │   └── limits.md
 │   ├── commands/      the v-command specs
 │   │   ├── index.md
 │   │   ├── init.md
 │   │   ├── compact.md
 │   │   └── flow.md
+│   ├── future/        parked material not yet owned by any spec
 │   └── diagrams/      .mmd sources
 └── skills/            shipped agent skills [IP]
     ├── viber/         regime dispatcher + references
